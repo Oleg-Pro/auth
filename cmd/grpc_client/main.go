@@ -31,14 +31,8 @@ func main() {
 
 	r, err := client.Get(ctx, &desc.GetRequest{Id: userId})
 	if err != nil {				
-		log.Fatalf("Failed to User #{err}")
+		log.Fatalf("Failed to User %v", err)
 	}
 
 	log.Printf(color.RedString("User Info \n"), color.GreenString("%+v", r))
-
-
-
-
-
-
 }

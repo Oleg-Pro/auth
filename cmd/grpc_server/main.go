@@ -59,8 +59,6 @@ func(s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Emp
 
 
 func main() {
-	fmt.Println("Server:" , grcPort)
-
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grcPort))
 	if err != nil {
 		log.Fatalf("Failed to listen #{err}")
