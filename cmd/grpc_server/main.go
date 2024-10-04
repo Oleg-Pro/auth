@@ -2,61 +2,64 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"log"
-	"math/rand"
+	"math"
+	"math/big"
 	"net"
 
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 	"github.com/brianvoe/gofakeit"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	empty "github.com/golang/protobuf/ptypes/empty"	
 )
 
-
 const grcPort = 50051
-
 
 type server struct {
 	desc.UnimplementedUserV1Server
 }
 
-func(s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
+func (s *server) Create(_ context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
+	fmt.Printf("Create User req=%v", req)
+
+	val, err := rand.Int(rand.Reader, big.NewInt(int64(math.MaxInt64)))
+	if err != nil {
+		panic(err)
+	}
+
 	return &desc.CreateResponse{
-		Id: rand.Int63(),
+		Id: val.Int64(),
 	}, nil
 }
 
-
-func (s * server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	log.Printf("User id: %+v", req)
+func (s *server) Get(_ context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
+	log.Printf("Get User req=%v", req)
 
 	return &desc.GetResponse{
-		Id: req.GetId(),
-		Name: gofakeit.Name(),
-		Email: gofakeit.Email(),
-		Role: desc.Role_USER,		
+		Id:        req.GetId(),
+		Name:      gofakeit.Name(),
+		Email:     gofakeit.Email(),
+		Role:      desc.Role_USER,
 		CreatedAt: timestamppb.New(gofakeit.Date()),
-		UpdatedAt: timestamppb.New(gofakeit.Date()),					
-
+		UpdatedAt: timestamppb.New(gofakeit.Date()),
 	}, nil
 }
 
-func(s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
+func (s *server) Update(_ context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
 
-	log.Printf("Id=%d: Name=%s Email=%s Role=%d", req.GetId(), req.GetName(), req.GetEmail(), req.GetRole())		
+	log.Printf("Update User req=%v", req)
 	return &empty.Empty{}, nil
 }
 
+func (s *server) Delete(_ context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
 
-func(s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
-
-	log.Printf("Deleting User with Id=%d", req.GetId())		
+	log.Printf("Deleting User req=%v", req)
 	return &empty.Empty{}, nil
 }
-
 
 func main() {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grcPort))
@@ -66,11 +69,10 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-    desc.RegisterUserV1Server(s, &server{})
-	log.Printf("server listening at %v", listener.Addr())	
+	desc.RegisterUserV1Server(s, &server{})
+	log.Printf("server listening at %v", listener.Addr())
 
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("Failed to serve #{err}")
 	}
 }
-
