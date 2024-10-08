@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-
-	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
-
 	"log"
 	"time"
 
+	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 	"github.com/fatih/color"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
