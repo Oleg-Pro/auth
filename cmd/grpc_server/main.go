@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"net"
 	"time"
-
+	"github.com/Oleg-Pro/auth/internal/config"		
 	sq "github.com/Masterminds/squirrel"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 	empty "github.com/golang/protobuf/ptypes/empty"
@@ -18,10 +19,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const grcPort = 50051
+
+var configPath string
+
+func init() {
+	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+}
+
 
 const (
-	dbDSN     = "host=localhost port=54321 dbname=auth user=auth-user password=auth-password sslmode=disable"
 	userTable = "users"
 )
 
@@ -176,15 +182,32 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Em
 }
 
 func main() {
+	flag.Parse()
+
+	err := config.Load(configPath)
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	grpcConfig, err := config.NewGRPCConfig()
+	if err != nil {
+		log.Fatalf("failed to get grpc config: %v", err)
+	}	
+
+	pgConfig, err := config.NewPGConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %v", err)
+	}
+
 	ctx := context.Background()
 
-	pool, err := pgxpool.Connect(ctx, dbDSN)
+	pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 	defer pool.Close()
 
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grcPort))
+	listener, err := net.Listen("tcp", grpcConfig.Address())
 	if err != nil {
 		log.Fatalf("Failed to listen #{err}")
 	}
