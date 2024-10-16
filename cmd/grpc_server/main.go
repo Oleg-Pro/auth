@@ -8,8 +8,9 @@ import (
 	"log"
 	"net"
 	"time"
-	"github.com/Oleg-Pro/auth/internal/config"		
+
 	sq "github.com/Masterminds/squirrel"
+	"github.com/Oleg-Pro/auth/internal/config"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -19,13 +20,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-
 var configPath string
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
 }
-
 
 const (
 	userTable = "users"
@@ -192,7 +191,7 @@ func main() {
 	grpcConfig, err := config.NewGRPCConfig()
 	if err != nil {
 		log.Fatalf("failed to get grpc config: %v", err)
-	}	
+	}
 
 	pgConfig, err := config.NewPGConfig()
 	if err != nil {
