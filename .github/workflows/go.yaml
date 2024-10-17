@@ -88,7 +88,7 @@ jobs:
           echo "PG_PORT=5432" >> .env
           echo "MIGRATION_DIR=./migrations" >> .env
           echo "GRPC_HOST=0.0.0.0" >> .env
-          echo "GRPC_PORT=50052" >> .env
+          echo "GRPC_PORT=50051" >> .env
           echo "PG_DSN=host=$DB_CONTAINER_NAME port=5432 dbname=auth user=${{secrets.PG_USER}} password=${{secrets.PG_PASSWORD}} sslmode=disable" >> .env
 
       - name: Set up Docker Buildx
@@ -137,7 +137,7 @@ jobs:
             docker login -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }} $REGISTRY
             docker stop $CONTAINER_NAME || true
             docker rm $CONTAINER_NAME || true
-            docker run -d -p 50052:50052 --network auth-service-network --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME
+            docker run -d -p 50051:50051 --network auth-service-network --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME
 
             # Запуск или создание контейнера Postgres с постоянным хранилищем
             if [ "$(docker ps -q -f name=$DB_CONTAINER_NAME)" ]; then
