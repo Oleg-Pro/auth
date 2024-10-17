@@ -4,7 +4,7 @@ COPY . /github.com/Oleg-Pro/auth
 WORKDIR /github.com/Oleg-Pro/auth
 
 RUN go mod download
-RUN go build -o ./bin/auth_server cmd/auth/main.go
+RUN go build -o ./bin/auth_server cmd/grpc_server/main.go
 
 FROM alpine:latest
 
