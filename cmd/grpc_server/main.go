@@ -29,13 +29,13 @@ func init() {
 const (
 	userTable = "users"
 
-	userColumnId = "id"
-	userColumnName = "name"
-	userColumnEmail = "email"
-	userColumnRoleID = "role_id"
-	userColumnCreatedAt = "created_at"
-	userColumnUpdateAt = "updated_at"
-	userColumnPasswordHash = "password_hash"			
+	userColumnID           = "id"
+	userColumnName         = "name"
+	userColumnEmail        = "email"
+	userColumnRoleID       = "role_id"
+	userColumnCreatedAt    = "created_at"
+	userColumnUpdateAt     = "updated_at"
+	userColumnPasswordHash = "password_hash"
 )
 
 type server struct {
@@ -81,10 +81,10 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	builderSelectOne := sq.Select(userColumnId, userColumnName, userColumnEmail, userColumnRoleID, userColumnCreatedAt, userColumnUpdateAt).
+	builderSelectOne := sq.Select(userColumnID, userColumnName, userColumnEmail, userColumnRoleID, userColumnCreatedAt, userColumnUpdateAt).
 		From(userTable).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{fmt.Sprintf(`"%s"`,userColumnId): req.GetId()}).
+		Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): req.GetId()}).
 		Limit(1)
 
 	query, args, err := builderSelectOne.ToSql()
@@ -125,7 +125,7 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Em
 		PlaceholderFormat(sq.Dollar).
 		Set(userColumnUpdateAt, time.Now()).
 		Set(userColumnRoleID, req.GetRole()).
-		Where(sq.Eq{fmt.Sprintf(`"%s"`,userColumnId): req.GetId()})
+		Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): req.GetId()})
 
 	if req.GetName() != nil {
 		builderUpdate = builderUpdate.Set(userColumnName, req.GetName().Value)
@@ -138,7 +138,7 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Em
 	}
 
 	query, args, err := builderUpdate.ToSql()
-	
+
 	if err != nil {
 		log.Printf("Failed to build update query: %v", err)
 		return nil, err
@@ -158,7 +158,7 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Em
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
 	builderDelete := sq.Delete(userTable).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{fmt.Sprintf(`"%s"`,userColumnId): req.GetId()})
+		Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): req.GetId()})
 
 	query, args, err := builderDelete.ToSql()
 	if err != nil {
