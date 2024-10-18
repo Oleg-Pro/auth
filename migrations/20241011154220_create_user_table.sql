@@ -1,7 +1,7 @@
 -- +goose Up
 CREATE TABLE roles (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE    
+    name TEXT NOT NULL UNIQUE    
 );
 
 INSERT INTO roles (name)
@@ -11,9 +11,9 @@ VALUES
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(320) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,    
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,    
     role_id INTEGER NOT NULL REFERENCES roles(id),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP

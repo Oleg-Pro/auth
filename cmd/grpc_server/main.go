@@ -28,6 +28,14 @@ func init() {
 
 const (
 	userTable = "users"
+
+	userColumnId = "id"
+	userColumnName = "name"
+	userColumnEmail = "email"
+	userColumnRoleID = "role_id"
+	userColumnCreatedAt = "created_at"
+	userColumnUpdateAt = "updated_at"
+	userColumnPasswordHash = "password_hash"			
 )
 
 type server struct {
@@ -36,37 +44,35 @@ type server struct {
 }
 
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	log.Printf("Create User req=%v\n", req)
-
 	if req.GetPasword() != req.PasswordConfirm {
 		err := fmt.Errorf("passwords are not equal")
 		log.Printf("Error: %v", err)
-		return &desc.CreateResponse{}, err
+		return nil, err
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.GetPasword()), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Could not create password hash: %v", err)
-		return &desc.CreateResponse{}, err
+		return nil, err
 	}
 
 	builderInsert := sq.Insert(userTable).
 		PlaceholderFormat(sq.Dollar).
-		Columns("name", "email", "password_hash", "role_id").
+		Columns(userColumnName, userColumnEmail, userColumnPasswordHash, userColumnRoleID).
 		Values(req.GetName(), req.GetEmail(), passwordHash, req.GetRole()).
 		Suffix("RETURNING id")
 
 	query, args, err := builderInsert.ToSql()
 	if err != nil {
 		log.Printf("Failed to build insert query: %v", err)
-		return &desc.CreateResponse{}, err
+		return nil, err
 	}
 
 	var userID int64
 	err = s.pool.QueryRow(ctx, query, args...).Scan(&userID)
 	if err != nil {
 		log.Printf("Failed to insert user: %v", err)
-		return &desc.CreateResponse{}, err
+		return nil, err
 	}
 
 	return &desc.CreateResponse{
@@ -75,18 +81,16 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	log.Printf("Get User req=%v", req)
-
-	builderSelectOne := sq.Select("id", "name", "email", "role_id", "created_at", "updated_at").
+	builderSelectOne := sq.Select(userColumnId, userColumnName, userColumnEmail, userColumnRoleID, userColumnCreatedAt, userColumnUpdateAt).
 		From(userTable).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": req.GetId()}).
+		Where(sq.Eq{fmt.Sprintf(`"%s"`,userColumnId): req.GetId()}).
 		Limit(1)
 
 	query, args, err := builderSelectOne.ToSql()
 	if err != nil {
 		log.Printf("Failed to build get query: %v", err)
-		return &desc.GetResponse{}, err
+		return nil, err
 	}
 
 	var id int64
@@ -98,10 +102,8 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 	err = s.pool.QueryRow(ctx, query, args...).Scan(&id, &name, &email, &roleID, &createdAt, &updatedAt)
 	if err != nil {
 		log.Printf("Failed to get user: %v", err)
-		return &desc.GetResponse{}, err
+		return nil, err
 	}
-
-	log.Printf("id: %d, name: %s, email: %s, roleId: %d, created_at: %v, updated_at: %v\n", id, name, email, roleID, createdAt, updatedAt)
 
 	var updateAtTime *timestamppb.Timestamp
 	if updatedAt.Valid {
@@ -119,34 +121,33 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 }
 
 func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
-
-	log.Printf("Update User req=%v", req)
-
 	builderUpdate := sq.Update(userTable).
 		PlaceholderFormat(sq.Dollar).
-		Set("updated_at", time.Now()).
-		Set("role_id", req.GetRole()).
-		Where(sq.Eq{"id": req.GetId()})
+		Set(userColumnUpdateAt, time.Now()).
+		Set(userColumnRoleID, req.GetRole()).
+		Where(sq.Eq{fmt.Sprintf(`"%s"`,userColumnId): req.GetId()})
 
 	if req.GetName() != nil {
-		builderUpdate.Set("name", req.GetName().Value)
+		builderUpdate = builderUpdate.Set(userColumnName, req.GetName().Value)
 	}
 
 	if req.GetEmail() != nil {
 		log.Printf("Email: %v", req.GetEmail().Value)
-		builderUpdate.Set("email", req.GetEmail().Value)
+
+		builderUpdate = builderUpdate.Set(userColumnEmail, req.GetEmail().Value)
 	}
 
 	query, args, err := builderUpdate.ToSql()
+	
 	if err != nil {
 		log.Printf("Failed to build update query: %v", err)
-		return &empty.Empty{}, err
+		return nil, err
 	}
 
 	res, err := s.pool.Exec(ctx, query, args...)
 	if err != nil {
 		log.Printf("Failed to update user with id %d: %v", req.GetId(), err)
-		return &empty.Empty{}, err
+		return nil, err
 	}
 
 	log.Printf("updated %d rows", res.RowsAffected())
@@ -155,15 +156,14 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Em
 }
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
-
 	builderDelete := sq.Delete(userTable).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{"id": req.GetId()})
+		Where(sq.Eq{fmt.Sprintf(`"%s"`,userColumnId): req.GetId()})
 
 	query, args, err := builderDelete.ToSql()
 	if err != nil {
 		log.Printf("Failed to build delete query: %v", err)
-		return &empty.Empty{}, err
+		return nil, err
 	}
 
 	log.Printf("DELETE SQL query: %s", query)
@@ -171,7 +171,7 @@ func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Em
 	res, err := s.pool.Exec(ctx, query, args...)
 	if err != nil {
 		log.Printf("Failed to delete user with id %d: %v", req.GetId(), err)
-		return &empty.Empty{}, err
+		return nil, err
 	}
 
 	log.Printf("delete %d rows", res.RowsAffected())
@@ -208,7 +208,7 @@ func main() {
 
 	listener, err := net.Listen("tcp", grpcConfig.Address())
 	if err != nil {
-		log.Fatalf("Failed to listen #{err}")
+		log.Fatalf("Failed to listen: %v", err)
 	}
 
 	s := grpc.NewServer()
@@ -217,6 +217,6 @@ func main() {
 	log.Printf("server listening at %v", listener.Addr())
 
 	if err := s.Serve(listener); err != nil {
-		log.Fatalf("Failed to serve #{err}")
+		log.Fatalf("Failed to serve: %v", err)
 	}
 }
