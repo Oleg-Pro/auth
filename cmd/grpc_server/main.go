@@ -28,7 +28,6 @@ func init() {
 
 type server struct {
 	desc.UnimplementedUserV1Server
-	pool           *pgxpool.Pool
 	userRepository repository.UserRepository
 }
 
@@ -72,37 +71,6 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 }
 
 func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
-	/*	builderUpdate := sq.Update(userTable).
-			PlaceholderFormat(sq.Dollar).
-			Set(userColumnUpdateAt, time.Now()).
-			Set(userColumnRoleID, req.GetRole()).
-			Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): req.GetId()})
-
-		if req.GetName() != nil {
-			builderUpdate = builderUpdate.Set(userColumnName, req.GetName().Value)
-		}
-
-		if req.GetEmail() != nil {
-			log.Printf("Email: %v", req.GetEmail().Value)
-
-			builderUpdate = builderUpdate.Set(userColumnEmail, req.GetEmail().Value)
-		}
-
-		query, args, err := builderUpdate.ToSql()
-
-		if err != nil {
-			log.Printf("Failed to build update query: %v", err)
-			return nil, err
-		}
-
-		res, err := s.pool.Exec(ctx, query, args...)
-		if err != nil {
-			log.Printf("Failed to update user with id %d: %v", req.GetId(), err)
-			return nil, err
-		}
-
-		log.Printf("updated %d rows", res.RowsAffected())*/
-
 	var name, email *string
 	if req.GetName() != nil {
 		name = &req.GetName().Value
@@ -168,7 +136,7 @@ func main() {
 
 	userRepository := user.NewRepository(pool)
 
-	desc.RegisterUserV1Server(s, &server{pool: pool, userRepository: userRepository})
+	desc.RegisterUserV1Server(s, &server{userRepository: userRepository})
 	log.Printf("server listening at %v", listener.Addr())
 
 	if err := s.Serve(listener); err != nil {
