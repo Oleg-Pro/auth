@@ -10,8 +10,9 @@ import (
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/converter"
 	"github.com/Oleg-Pro/auth/internal/model"
-	"github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/Oleg-Pro/auth/internal/repository/user"
+	"github.com/Oleg-Pro/auth/internal/service"
+	userService "github.com/Oleg-Pro/auth/internal/service/user"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -28,7 +29,7 @@ func init() {
 
 type server struct {
 	desc.UnimplementedUserV1Server
-	userRepository repository.UserRepository
+	userService service.UserService
 }
 
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
@@ -44,7 +45,7 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 		return nil, err
 	}
 
-	userID, err := s.userRepository.Create(ctx, &model.UserInfo{
+	userID, err := s.userService.Create(ctx, &model.UserInfo{
 		Name:        req.GetName(),
 		Email:       req.GetEmail(),
 		PaswordHash: string(passwordHash),
@@ -62,7 +63,7 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	user, err := s.userRepository.Get(ctx, req.GetId())
+	user, err := s.userService.Get(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +81,7 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Em
 		email = &req.GetEmail().Value
 	}
 
-	_, err := s.userRepository.Update(ctx, req.GetId(), name, email, model.Role(req.GetRole()))
+	_, err := s.userService.Update(ctx, req.GetId(), name, email, model.Role(req.GetRole()))
 	if err != nil {
 		log.Printf("Failed to update user: %v", err)
 		return nil, err
@@ -91,7 +92,7 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Em
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*empty.Empty, error) {
 	log.Printf("Deleting User req=%v", req)
-	_, err := s.userRepository.Delete(ctx, req.GetId())
+	_, err := s.userService.Delete(ctx, req.GetId())
 	if err != nil {
 		log.Printf("Failed to delete user: %v", err)
 		return nil, err
@@ -135,8 +136,9 @@ func main() {
 	reflection.Register(s)
 
 	userRepository := user.NewRepository(pool)
+	userService := userService.New(userRepository)
 
-	desc.RegisterUserV1Server(s, &server{userRepository: userRepository})
+	desc.RegisterUserV1Server(s, &server{userService: userService})
 	log.Printf("server listening at %v", listener.Addr())
 
 	if err := s.Serve(listener); err != nil {
