@@ -2,13 +2,15 @@ package user
 
 import (
 	"context"
-	"log"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"	
-	"github.com/Oleg-Pro/auth/internal/model"	
-	desc "github.com/Oleg-Pro/auth/pkg/user_v1"	
+	"log"
+
+	"github.com/Oleg-Pro/auth/internal/model"
+	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
+	"golang.org/x/crypto/bcrypt"
 )
 
+// Create implementation of Create User Api Method
 func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	if req.GetPasword() != req.PasswordConfirm {
 		err := fmt.Errorf("passwords are not equal")
@@ -38,5 +40,3 @@ func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 		Id: userID,
 	}, nil
 }
-
-

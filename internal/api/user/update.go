@@ -3,11 +3,13 @@ package user
 import (
 	"context"
 	"log"
-	"github.com/Oleg-Pro/auth/internal/model"	
-	desc "github.com/Oleg-Pro/auth/pkg/user_v1"	
-	empty "github.com/golang/protobuf/ptypes/empty"	
+
+	"github.com/Oleg-Pro/auth/internal/model"
+	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
+	empty "github.com/golang/protobuf/ptypes/empty"
 )
 
+// Update implementation of Create User Api Method
 func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*empty.Empty, error) {
 	var name, email *string
 	if req.GetName() != nil {
