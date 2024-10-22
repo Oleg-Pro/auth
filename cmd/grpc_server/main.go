@@ -12,6 +12,7 @@ import (
 	"github.com/Oleg-Pro/auth/internal/model"
 	"github.com/Oleg-Pro/auth/internal/repository/user"
 	"github.com/Oleg-Pro/auth/internal/service"
+	userAPI "github.com/Oleg-Pro/auth/internal/api/user"		
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 	empty "github.com/golang/protobuf/ptypes/empty"
@@ -138,7 +139,8 @@ func main() {
 	userRepository := user.NewRepository(pool)
 	userService := userService.New(userRepository)
 
-	desc.RegisterUserV1Server(s, &server{userService: userService})
+
+	desc.RegisterUserV1Server(s, userAPI.NewImplementation(userService)/*&server{userService: userService}*/)
 	log.Printf("server listening at %v", listener.Addr())
 
 	if err := s.Serve(listener); err != nil {
