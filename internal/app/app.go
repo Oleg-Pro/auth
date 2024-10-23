@@ -25,7 +25,7 @@ type App struct {
 func NewApp(ctx context.Context) (*App, error) {
 	a := &App{}
 	flag.StringVar(&a.configPath, "config-path", ".env", "path to config file")
-	flag.Parse()	
+	flag.Parse()
 
 	err := a.initDeps(ctx)
 	if err != nil {
