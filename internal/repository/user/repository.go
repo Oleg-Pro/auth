@@ -72,9 +72,6 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 		return nil, err
 	}
 
-	fmt.Printf("Query: %s\n", query)
-	fmt.Printf("Args: %v\n", args)
-
 	var user modelRepo.User
 	err = r.pool.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
