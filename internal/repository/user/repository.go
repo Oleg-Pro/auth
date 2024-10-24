@@ -7,11 +7,11 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/Oleg-Pro/auth/internal/client/db"
 	"github.com/Oleg-Pro/auth/internal/model"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/Oleg-Pro/auth/internal/repository/user/converter"
 	modelRepo "github.com/Oleg-Pro/auth/internal/repository/user/model"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (
@@ -27,12 +27,12 @@ const (
 )
 
 type repo struct {
-	pool *pgxpool.Pool
+	db db.Client
 }
 
 // NewRepository create UserRepository
-func NewRepository(pool *pgxpool.Pool) repository.UserRepository {
-	return &repo{pool: pool}
+func NewRepository(db db.Client) repository.UserRepository {
+	return &repo{db: db}
 }
 
 func (r *repo) Create(ctx context.Context, info *model.UserInfo) (int64, error) {
@@ -50,7 +50,13 @@ func (r *repo) Create(ctx context.Context, info *model.UserInfo) (int64, error) 
 	}
 
 	var userID int64
-	err = r.pool.QueryRow(ctx, query, args...).Scan(&userID)
+
+	q := db.Query{
+		Name:     "user_repository.Create",
+		QueryRaw: query,
+	}
+
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&userID)
 	if err != nil {
 		log.Printf("Failed to insert user: %v", err)
 		return 0, err
@@ -73,7 +79,13 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	}
 
 	var user modelRepo.User
-	err = r.pool.QueryRow(ctx, query, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
+
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		log.Printf("Failed to get user: %v", err)
 		return nil, err
@@ -106,7 +118,12 @@ func (r *repo) Update(ctx context.Context, id int64, name *string, email *string
 		return 0, err
 	}
 
-	res, err := r.pool.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Update",
+		QueryRaw: query,
+	}
+
+	res, err := r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		log.Printf("Failed to update user with id %d: %v", id, err)
 		return 0, err
@@ -129,9 +146,12 @@ func (r *repo) Delete(ctx context.Context, id int64) (int64, error) {
 		return 0, err
 	}
 
-	log.Printf("DELETE SQL query: %s", query)
+	q := db.Query{
+		Name:     "user_repository.Delete",
+		QueryRaw: query,
+	}
 
-	res, err := r.pool.Exec(ctx, query, args...)
+	res, err := r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		log.Printf("Failed to delete user with id %d: %v", id, err)
 		return 0, err

@@ -5,20 +5,25 @@ import (
 	"log"
 
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
+	"github.com/Oleg-Pro/auth/internal/client/db"
+	"github.com/Oleg-Pro/auth/internal/client/db/pg"
+	"github.com/Oleg-Pro/auth/internal/client/db/transaction"
 	"github.com/Oleg-Pro/auth/internal/closer"
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	userRepository "github.com/Oleg-Pro/auth/internal/repository/user"
 	"github.com/Oleg-Pro/auth/internal/service"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type serviceProvider struct {
-	pgConfig          config.PGConfig
-	grpcConfig        config.GRPCConfig
-	pgPool            *pgxpool.Pool
-	userRepository    repository.UserRepository
+	pgConfig   config.PGConfig
+	grpcConfig config.GRPCConfig
+
+	dbClient       db.Client
+	txManager      db.TxManager
+	userRepository repository.UserRepository
+
 	userService       service.UserService
 	userImplemenation *userAPI.Implementation
 }
@@ -53,33 +58,35 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) PgPool(ctx context.Context) *pgxpool.Pool {
-	if s.pgPool == nil {
-		pool, err := pgxpool.Connect(ctx, s.PGConfig().DSN())
+func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
+	if s.dbClient == nil {
+		client, err := pg.New(ctx, s.PGConfig().DSN())
 		if err != nil {
-			log.Fatalf("failed to get pg config: %s", err.Error())
+			log.Fatalf("failed to create db client: %v", err)
 		}
 
-		err = pool.Ping(ctx)
+		err = client.DB().Ping(ctx)
 		if err != nil {
 			log.Fatalf("ping error: %s", err.Error())
-
 		}
+		closer.Add(client.Close)
 
-		closer.Add(func() error {
-			pool.Close()
-			return nil
-		})
-
-		s.pgPool = pool
+		s.dbClient = client
 	}
 
-	return s.pgPool
+	return s.dbClient
+}
+
+func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if s.txManager == nil {
+		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
+	}
+	return s.txManager
 }
 
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
-		s.userRepository = userRepository.NewRepository(s.PgPool(ctx))
+		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
 	}
 
 	return s.userRepository
