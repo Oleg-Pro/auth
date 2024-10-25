@@ -20,7 +20,7 @@ func (i *Implementation) Update(ctx context.Context, req *desc.UpdateRequest) (*
 		email = &req.GetEmail().Value
 	}
 
-	_, err := i.userService.Update(ctx, req.GetId(), name, email, model.Role(req.GetRole()))
+	_, err := i.userService.Update(ctx, req.GetId(), &model.UserUpdateInfo{Name: name, Email: email, Role: model.Role(req.GetRole())})
 	if err != nil {
 		log.Printf("Failed to update user: %v", err)
 		return nil, err

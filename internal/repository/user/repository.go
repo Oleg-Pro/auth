@@ -94,21 +94,19 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	return converter.ToUserFromRepo(&user), nil
 }
 
-func (r *repo) Update(ctx context.Context, id int64, name *string, email *string, role model.Role) (int64, error) {
+func (r *repo) Update(ctx context.Context, id int64, info *model.UserUpdateInfo) (int64, error) {
 	builderUpdate := sq.Update(userTable).
 		PlaceholderFormat(sq.Dollar).
 		Set(userColumnUpdateAt, time.Now()).
-		Set(userColumnRoleID, role).
+		Set(userColumnRoleID, info.Role).
 		Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): id})
 
-	if name != nil {
-		builderUpdate = builderUpdate.Set(userColumnName, *name)
+	if info.Name != nil {
+		builderUpdate = builderUpdate.Set(userColumnName, info.Name)
 	}
 
-	if email != nil {
-		log.Printf("Email: %v", email)
-
-		builderUpdate = builderUpdate.Set(userColumnEmail, email)
+	if info.Email != nil {
+		builderUpdate = builderUpdate.Set(userColumnEmail, info.Email)
 	}
 
 	query, args, err := builderUpdate.ToSql()

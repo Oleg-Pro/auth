@@ -16,6 +16,13 @@ type UserInfo struct {
 	Role        Role
 }
 
+// UserUpdateInfo data to update for user
+type UserUpdateInfo struct {
+	Name  *string
+	Email *string
+	Role  Role
+}
+
 // User entity
 type User struct {
 	ID        int64
