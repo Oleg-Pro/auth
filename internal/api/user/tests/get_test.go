@@ -29,28 +29,26 @@ func TestGet(t *testing.T) {
 		ctx = context.Background()
 		mc  = minimock.NewController(t)
 
-		id              = gofakeit.Int64()
-		name            = gofakeit.Name()
-		email           = gofakeit.Email()
-		role            = desc.Role_ADMIN
-		passwordHash = "$2a$10$krN.Ht8n2kfg12nPcHYMoeHB/dBB7Tvpj40b9U55VP6G.l.inwayO"
-		createdAt = gofakeit.Date()
-		updatedAt = gofakeit.Date()
-
+		id           = gofakeit.Int64()
+		name         = gofakeit.Name()
+		email        = gofakeit.Email()
+		role         = desc.Role_ADMIN
+		passwordHash = "123456"
+		createdAt    = gofakeit.Date()
+		updatedAt    = gofakeit.Date()
 
 		req = &desc.GetRequest{
 			Id: id,
 		}
 
 		res = &desc.GetResponse{
-			Id: id,
-			Name: name,
-			Email: email,
-			Role: role,
+			Id:        id,
+			Name:      name,
+			Email:     email,
+			Role:      role,
 			CreatedAt: timestamppb.New(createdAt),
 			UpdatedAt: timestamppb.New(updatedAt),
-
-		}	
+		}
 	)
 
 	defer t.Cleanup(mc.Finish)
@@ -76,14 +74,13 @@ func TestGet(t *testing.T) {
 				mock.GetMock.Expect(ctx, id).Return(&model.User{
 					ID: id,
 					Info: model.UserInfo{
-						Name: name,
-						Email: email, 
+						Name:        name,
+						Email:       email,
 						PaswordHash: passwordHash,
-						Role: model.RoleADMIN,					
-					},	
+						Role:        model.RoleADMIN,
+					},
 					CreatedAt: createdAt,
 					UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
-
 				}, nil)
 
 				return mock

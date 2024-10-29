@@ -20,78 +20,76 @@ func TestGet(t *testing.T) {
 
 	type args struct {
 		ctx context.Context
-		id int64
+		id  int64
 	}
 
 	var (
 		ctx = context.Background()
 		mc  = minimock.NewController(t)
 
-		id              = gofakeit.Int64()
-		name            = gofakeit.Name()
-		email           = gofakeit.Email()
-		passwordHash        = "$2a$10$krN.Ht8n2kfg12nPcHYMoeHB/dBB7Tvpj40b9U55VP6G.l.inwayO	"
-		role            = model.RoleADMIN
-		createdAt = gofakeit.Date()
-		updatedAt = gofakeit.Date()
+		id           = gofakeit.Int64()
+		name         = gofakeit.Name()
+		email        = gofakeit.Email()
+		passwordHash = "123456"
+		role         = model.RoleADMIN
+		createdAt    = gofakeit.Date()
+		updatedAt    = gofakeit.Date()
 
-/*		ID        int64
-		Info      UserInfo
-		CreatedAt time.Time
-		UpdatedAt sql.NullTime		*/
+		/*		ID        int64
+				Info      UserInfo
+				CreatedAt time.Time
+				UpdatedAt sql.NullTime		*/
 
-/*		req = &model.User
-			ID:           id,
-			Info:         model.User{
+		/*		req = &model.User
+				ID:           id,
+				Info:         model.User{
 
-			},
-			PaswordHash:         passwordHash,
-			Role:           role,
-		}*/
+				},
+				PaswordHash:         passwordHash,
+				Role:           role,
+			}*/
 
 	)
 
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name            string
-		args            args
-		want            *model.User
-		err             error
+		name               string
+		args               args
+		want               *model.User
+		err                error
 		userRepositoryMock userRepositoryMockFunc
 	}{
 		{
 			name: "success case",
 			args: args{
 				ctx: ctx,
-				id: id,
+				id:  id,
 			},
 			want: &model.User{
 				ID: id,
 				Info: model.UserInfo{
-					Name: name,
-					Email: email,
-					Role: role,
+					Name:        name,
+					Email:       email,
+					Role:        role,
 					PaswordHash: passwordHash,
 				},
-				CreatedAt: createdAt,				
+				CreatedAt: createdAt,
 				UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
-				
 			},
-			err:  nil,
+			err: nil,
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
 				mock.GetMock.Expect(ctx, id).Return(&model.User{
 					ID: id,
 					Info: model.UserInfo{
-						Name: name,
-						Email: email,
-						Role: role,
-						PaswordHash: passwordHash,						
+						Name:        name,
+						Email:       email,
+						Role:        role,
+						PaswordHash: passwordHash,
 					},
-					CreatedAt: createdAt,				
+					CreatedAt: createdAt,
 					UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
-					
 				}, nil)
 				return mock
 			},

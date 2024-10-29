@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/Oleg-Pro/auth/internal/model"
-	"github.com/Oleg-Pro/auth/internal/repository"	
-	"github.com/Oleg-Pro/auth/internal/service/user"	
+	"github.com/Oleg-Pro/auth/internal/repository"
 	repoMocks "github.com/Oleg-Pro/auth/internal/repository/mocks"
+	"github.com/Oleg-Pro/auth/internal/service/user"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
@@ -26,28 +26,27 @@ func TestCreate(t *testing.T) {
 		ctx = context.Background()
 		mc  = minimock.NewController(t)
 
-		id              = gofakeit.Int64()
-		name            = gofakeit.Name()
-		email           = gofakeit.Email()
-		passwordHash        = "$2a$10$krN.Ht8n2kfg12nPcHYMoeHB/dBB7Tvpj40b9U55VP6G.l.inwayO	"
-		role            = model.RoleADMIN
+		id           = gofakeit.Int64()
+		name         = gofakeit.Name()
+		email        = gofakeit.Email()
+		passwordHash = "123456"
+		role         = model.RoleADMIN
 
 		req = &model.UserInfo{
-			Name:            name,
-			Email:           email,
-			PaswordHash:         passwordHash,
-			Role:            role,
+			Name:        name,
+			Email:       email,
+			PaswordHash: passwordHash,
+			Role:        role,
 		}
-
 	)
 
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name            string
-		args            args
-		want            int64
-		err             error
+		name               string
+		args               args
+		want               int64
+		err                error
 		userRepositoryMock userRepositoryMockFunc
 	}{
 		{
