@@ -12,7 +12,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func TestCreate(t *testing.T) {
@@ -27,18 +26,27 @@ func TestCreate(t *testing.T) {
 		ctx = context.Background()
 		mc  = minimock.NewController(t)
 
-		id       = gofakeit.Int64()
-		name     = gofakeit.Name()
-		email    = gofakeit.Email()
-		password = "123456"
-		//		passwordConfirm = "123456"
-		role = desc.Role_ADMIN
+		id              = gofakeit.Int64()
+		name            = gofakeit.Name()
+		email           = gofakeit.Email()
+		password        = "123456"
+		passwordConfirm = "123456"
+		role            = desc.Role_ADMIN
 
 		req = &desc.CreateRequest{
 			Name:            name,
 			Email:           email,
 			Pasword:         password,
-			PasswordConfirm: password,
+			PasswordConfirm: passwordConfirm,
+			Role:            role,
+		}
+
+		passwordConfirmNotEqual   = "1234567"
+		reqWithDifferentPasswords = &desc.CreateRequest{
+			Name:            name,
+			Email:           email,
+			Pasword:         password,
+			PasswordConfirm: passwordConfirmNotEqual,
 			Role:            role,
 		}
 
@@ -46,16 +54,6 @@ func TestCreate(t *testing.T) {
 			Id: id,
 		}
 	)
-
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.GetPasword()), bcrypt.DefaultCost)
-	require.Equal(t, err, nil)
-
-	userInfo := &model.UserInfo{
-		Name:        name,
-		Email:       email,
-		PaswordHash: string(passwordHash),
-		Role:        model.Role(req.GetRole()),
-	}
 
 	defer t.Cleanup(mc.Finish)
 
@@ -76,9 +74,26 @@ func TestCreate(t *testing.T) {
 			err:  nil,
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
-				// Падает из-за Exept, потому-что при каждой генерации хэш будет разный
-				// Что можно с этим сделать?
-				mock.CreateMock.Expect(ctx, userInfo).Return(id, nil)
+				mock.CreateMock.ExpectCtxParam1(ctx).Inspect(func(ctx context.Context, info *model.UserInfo) {
+					require.Equal(t, email, info.Email)
+					require.Equal(t, name, info.Name)
+					require.Equal(t, model.Role_ADMIN, info.Role)
+
+				}).Return(id, nil)
+
+				return mock
+			},
+		},
+		{
+			name: "passwords are not equal",
+			args: args{
+				ctx: ctx,
+				req: reqWithDifferentPasswords,
+			},
+			want: nil,
+			err:  userAPI.ErrPasswordsAreNotEqual,
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
+				mock := serviceMocks.NewUserServiceMock(mc)
 				return mock
 			},
 		},
@@ -86,13 +101,12 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-
 		t.Run(tt.name, func(t *testing.T) {
 			userServiceMock := tt.userServiceMock(mc)
 			api := userAPI.NewImplementation(userServiceMock)
-			userID, err := api.Create(tt.args.ctx, tt.args.req)
+			resonse, err := api.Create(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)
-			require.Equal(t, tt.want.Id, userID)
+			require.Equal(t, tt.want, resonse)
 		})
 	}
 }

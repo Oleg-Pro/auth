@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log"
 
 	"github.com/Oleg-Pro/auth/internal/model"
@@ -10,11 +10,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var ErrPasswordsAreNotEqual = errors.New("passwords are not equal")
+
 // Create implementation of Create User Api Method
 func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	if req.GetPasword() != req.PasswordConfirm {
-		err := fmt.Errorf("passwords are not equal")
-		log.Printf("Error: %v", err)
+		err := ErrPasswordsAreNotEqual
 		return nil, err
 	}
 
