@@ -2,24 +2,25 @@ package tests
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/Oleg-Pro/auth/internal/model"
-	"github.com/Oleg-Pro/auth/internal/repository"	
-	"github.com/Oleg-Pro/auth/internal/service/user"	
+	"github.com/Oleg-Pro/auth/internal/repository"
 	repoMocks "github.com/Oleg-Pro/auth/internal/repository/mocks"
+	"github.com/Oleg-Pro/auth/internal/service/user"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreate(t *testing.T) {
+func TestGet(t *testing.T) {
 	t.Parallel()
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
 
 	type args struct {
 		ctx context.Context
-		req *model.UserInfo
+		id int64
 	}
 
 	var (
@@ -31,13 +32,22 @@ func TestCreate(t *testing.T) {
 		email           = gofakeit.Email()
 		passwordHash        = "$2a$10$krN.Ht8n2kfg12nPcHYMoeHB/dBB7Tvpj40b9U55VP6G.l.inwayO	"
 		role            = model.RoleADMIN
+		createdAt = gofakeit.Date()
+		updatedAt = gofakeit.Date()
 
-		req = &model.UserInfo{
-			Name:            name,
-			Email:           email,
+/*		ID        int64
+		Info      UserInfo
+		CreatedAt time.Time
+		UpdatedAt sql.NullTime		*/
+
+/*		req = &model.User
+			ID:           id,
+			Info:         model.User{
+
+			},
 			PaswordHash:         passwordHash,
-			Role:            role,
-		}
+			Role:           role,
+		}*/
 
 	)
 
@@ -46,7 +56,7 @@ func TestCreate(t *testing.T) {
 	tests := []struct {
 		name            string
 		args            args
-		want            int64
+		want            *model.User
 		err             error
 		userRepositoryMock userRepositoryMockFunc
 	}{
@@ -54,13 +64,35 @@ func TestCreate(t *testing.T) {
 			name: "success case",
 			args: args{
 				ctx: ctx,
-				req: req,
+				id: id,
 			},
-			want: id,
+			want: &model.User{
+				ID: id,
+				Info: model.UserInfo{
+					Name: name,
+					Email: email,
+					Role: role,
+					PaswordHash: passwordHash,
+				},
+				CreatedAt: createdAt,				
+				UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
+				
+			},
 			err:  nil,
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.CreateMock.Expect(ctx, req).Return(id, nil)
+				mock.GetMock.Expect(ctx, id).Return(&model.User{
+					ID: id,
+					Info: model.UserInfo{
+						Name: name,
+						Email: email,
+						Role: role,
+						PaswordHash: passwordHash,						
+					},
+					CreatedAt: createdAt,				
+					UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
+					
+				}, nil)
 				return mock
 			},
 		},
@@ -72,7 +104,7 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 			userRepoMock := tt.userRepositoryMock(mc)
 			api := user.New(userRepoMock)
-			resonse, err := api.Create(tt.args.ctx, tt.args.req)
+			resonse, err := api.Get(tt.args.ctx, tt.args.id)
 			require.Equal(t, tt.err, err)
 			require.Equal(t, tt.want, resonse)
 		})
