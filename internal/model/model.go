@@ -9,9 +9,14 @@ import (
 type Role int32
 
 const (
-	Role_UNKNOWN Role = 0
-	Role_USER    Role = 1
-	Role_ADMIN   Role = 2
+	// RoleUNKNOWN Unknown role
+	RoleUNKNOWN Role = 0
+
+	// RoleUSER user role
+	RoleUSER Role = 1
+
+	// RoleADMIN admin role
+	RoleADMIN Role = 2
 )
 
 // UserInfo info about user

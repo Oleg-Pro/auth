@@ -74,10 +74,10 @@ func TestCreate(t *testing.T) {
 			err:  nil,
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
-				mock.CreateMock.ExpectCtxParam1(ctx).Inspect(func(ctx context.Context, info *model.UserInfo) {
+				mock.CreateMock.ExpectCtxParam1(ctx).Inspect(func(_ context.Context, info *model.UserInfo) {
 					require.Equal(t, email, info.Email)
 					require.Equal(t, name, info.Name)
-					require.Equal(t, model.Role_ADMIN, info.Role)
+					require.Equal(t, model.RoleADMIN, info.Role)
 
 				}).Return(id, nil)
 

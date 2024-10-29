@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// ErrPasswordsAreNotEqual error when password are not equal
 var ErrPasswordsAreNotEqual = errors.New("passwords are not equal")
 
 // Create implementation of Create User Api Method
