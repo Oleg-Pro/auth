@@ -2,10 +2,8 @@ package tests
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
-	"github.com/Oleg-Pro/auth/internal/model"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	repoMocks "github.com/Oleg-Pro/auth/internal/repository/mocks"
 	"github.com/Oleg-Pro/auth/internal/service/user"
@@ -14,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGet(t *testing.T) {
+func TestDelete(t *testing.T) {
 	t.Parallel()
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
 
@@ -27,13 +25,8 @@ func TestGet(t *testing.T) {
 		ctx = context.Background()
 		mc  = minimock.NewController(t)
 
-		id           = gofakeit.Int64()
-		name         = gofakeit.Name()
-		email        = gofakeit.Email()
-		passwordHash = "123456"
-		role         = model.RoleADMIN
-		createdAt    = gofakeit.Date()
-		updatedAt    = gofakeit.Date()
+		id = gofakeit.Int64()
+		numberOfRows = int64(1)
 	)
 
 	defer t.Cleanup(mc.Finish)
@@ -41,7 +34,7 @@ func TestGet(t *testing.T) {
 	tests := []struct {
 		name               string
 		args               args
-		want               *model.User
+		want               int64
 		err                error
 		userRepositoryMock userRepositoryMockFunc
 	}{
@@ -51,31 +44,11 @@ func TestGet(t *testing.T) {
 				ctx: ctx,
 				id:  id,
 			},
-			want: &model.User{
-				ID: id,
-				Info: model.UserInfo{
-					Name:        name,
-					Email:       email,
-					Role:        role,
-					PaswordHash: passwordHash,
-				},
-				CreatedAt: createdAt,
-				UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
-			},
-			err: nil,
+			want: numberOfRows,
+			err:  nil,
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.GetMock.Expect(ctx, id).Return(&model.User{
-					ID: id,
-					Info: model.UserInfo{
-						Name:        name,
-						Email:       email,
-						Role:        role,
-						PaswordHash: passwordHash,
-					},
-					CreatedAt: createdAt,
-					UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
-				}, nil)
+				mock.DeleteMock.Expect(ctx, id).Return(int64(numberOfRows), nil)
 				return mock
 			},
 		},
@@ -87,7 +60,7 @@ func TestGet(t *testing.T) {
 			t.Parallel()
 			userRepoMock := tt.userRepositoryMock(mc)
 			api := user.New(userRepoMock)
-			resonse, err := api.Get(tt.args.ctx, tt.args.id)
+			resonse, err := api.Delete(tt.args.ctx, tt.args.id)
 			require.Equal(t, tt.err, err)
 			require.Equal(t, tt.want, resonse)
 		})
