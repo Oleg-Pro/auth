@@ -1,6 +1,6 @@
 module github.com/Oleg-Pro/auth
 
-go 1.23
+go 1.23.1
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
@@ -20,6 +20,7 @@ require (
 )
 
 require (
+	github.com/Oleg-Pro/platform-common v0.0.0-20241030171438-d230043323fa // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

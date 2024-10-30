@@ -5,15 +5,15 @@ import (
 	"log"
 
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
-	"github.com/Oleg-Pro/auth/internal/client/db"
-	"github.com/Oleg-Pro/auth/internal/client/db/pg"
-	"github.com/Oleg-Pro/auth/internal/client/db/transaction"
-	"github.com/Oleg-Pro/auth/internal/closer"
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	userRepository "github.com/Oleg-Pro/auth/internal/repository/user"
 	"github.com/Oleg-Pro/auth/internal/service"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
+	"github.com/Oleg-Pro/platform-common/pkg/closer"
+	"github.com/Oleg-Pro/platform-common/pkg/db"
+	"github.com/Oleg-Pro/platform-common/pkg/db/pg"
+	"github.com/Oleg-Pro/platform-common/pkg/db/transaction"
 )
 
 type serviceProvider struct {
