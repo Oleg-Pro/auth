@@ -22,6 +22,7 @@ require (
 require (
 	github.com/Oleg-Pro/platform-common v0.0.0-20241030171438-d230043323fa // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/gomodule/redigo v1.9.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
