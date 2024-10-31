@@ -77,6 +77,8 @@ func (s *serviceProvider) RedisConfig() config.RedisConfig {
 		s.redisConfig = cfg
 	}
 
+	log.Printf("Redis Config: %#v\n", s.redisConfig)
+
 	return s.redisConfig
 }
 
@@ -117,6 +119,8 @@ func (s *serviceProvider) RedisPool() *redigo.Pool {
 		}
 	}
 
+	log.Printf("Redis Pool: %#v\n", s.redisPool)	
+
 	return s.redisPool
 }
 
@@ -124,6 +128,8 @@ func (s *serviceProvider) RedisClient() cache.RedisClient {
 	if s.redisClient == nil {
 		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
 	}
+
+	log.Printf("Redis Client: %#v\n", s.redisClient)		
 
 	return s.redisClient
 }
@@ -141,6 +147,7 @@ func (s *serviceProvider) UserCacheRepository(ctx context.Context) repository.Us
 		s.userCacheRepository = userCacheRepository.NewRepository(s.RedisClient())
 	}
 
+	log.Printf("UserCacheRepository: %#v\n", s.userCacheRepository)			
 	return s.userCacheRepository
 }
 

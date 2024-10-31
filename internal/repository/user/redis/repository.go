@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"log"
 	"strconv"
 	"time"
 
@@ -43,7 +42,6 @@ func (r *repo) Create(ctx context.Context, id int64, info *model.UserInfo) (int6
 }
 
 func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
-	log.Printf("Redis client: %#v\n", r.cl)
 	idStr := strconv.FormatInt(id, 10)
 	values, err := r.cl.HGetAll(ctx, idStr)
 	if err != nil {
