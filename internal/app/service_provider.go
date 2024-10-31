@@ -94,10 +94,10 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 
 func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if s.userService == nil {
-		s.userRepository = userService.New(s.UserRepository(ctx))
+		s.userService = userService.New(s.UserRepository(ctx))
 	}
 
-	return s.userRepository
+	return s.userService
 }
 
 func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Implementation {
