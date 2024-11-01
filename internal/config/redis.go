@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// RedisConfig interface
 type RedisConfig interface {
 	Address() string
 	ConnectionTimeout() time.Duration
@@ -34,6 +35,7 @@ type redisConfig struct {
 	idleTimeout time.Duration
 }
 
+// NewRedisConfig redis config contructor
 func NewRedisConfig() (*redisConfig, error) {
 	host := os.Getenv(redisHostEnvName)
 	if len(host) == 0 {

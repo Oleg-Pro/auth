@@ -16,7 +16,7 @@ import (
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
-	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository		
+	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository
 
 	type args struct {
 		ctx context.Context
@@ -43,12 +43,12 @@ func TestUpdate(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name               string
-		args               args
-		want               int64
-		err                error
-		userRepositoryMock userRepositoryMockFunc
-		userCacheRepositoryMock userCacheRepositoryMockFunc				
+		name                    string
+		args                    args
+		want                    int64
+		err                     error
+		userRepositoryMock      userRepositoryMockFunc
+		userCacheRepositoryMock userCacheRepositoryMockFunc
 	}{
 		{
 			name: "success case",
@@ -66,11 +66,14 @@ func TestUpdate(t *testing.T) {
 			},
 			userCacheRepositoryMock: func(mc *minimock.Controller) repository.UserCacheRepository {
 				mock := repoMocks.NewUserCacheRepositoryMock(mc)
-/*				mock.GetMock.Expect(ctx, id).Return(nil, model.ErrorNoteNotFound)
-				mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)				*/
-				return mock
-			},			
+				mock.UpdateMock.Expect(ctx, id, &model.UserUpdateInfo{
+					Name:  req.Name,
+					Email: req.Email,
+					Role:  req.Role,
+				}).Return(id, nil)
 
+				return mock
+			},
 		},
 	}
 

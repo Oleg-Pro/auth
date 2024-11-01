@@ -4,20 +4,20 @@ import (
 	"context"
 	"log"
 
-	redigo "github.com/gomodule/redigo/redis"
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
+	"github.com/Oleg-Pro/auth/internal/client/cache"
+	"github.com/Oleg-Pro/auth/internal/client/cache/redis"
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	userRepository "github.com/Oleg-Pro/auth/internal/repository/user"
-	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"	
-	"github.com/Oleg-Pro/auth/internal/client/cache/redis"		
+	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"
 	"github.com/Oleg-Pro/auth/internal/service"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/Oleg-Pro/platform-common/pkg/db"
-	"github.com/Oleg-Pro/platform-common/pkg/db/pg"	
+	"github.com/Oleg-Pro/platform-common/pkg/db/pg"
 	"github.com/Oleg-Pro/platform-common/pkg/db/transaction"
-	"github.com/Oleg-Pro/auth/internal/client/cache"	
+	redigo "github.com/gomodule/redigo/redis"
 )
 
 type serviceProvider struct {
@@ -25,16 +25,16 @@ type serviceProvider struct {
 	grpcConfig  config.GRPCConfig
 	redisConfig config.RedisConfig
 
-	dbClient       db.Client
-	txManager      db.TxManager
-	redisPool   *redigo.Pool	
-	redisClient cache.RedisClient	
+	dbClient    db.Client
+	txManager   db.TxManager
+	redisPool   *redigo.Pool
+	redisClient cache.RedisClient
 
 	userRepository repository.UserRepository
 
 	userCacheRepository repository.UserCacheRepository
-	userService       service.UserService
-	userImplemenation *userAPI.Implementation
+	userService         service.UserService
+	userImplemenation   *userAPI.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -136,7 +136,7 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 	return s.userRepository
 }
 
-func (s *serviceProvider) UserCacheRepository(ctx context.Context) repository.UserCacheRepository {
+func (s *serviceProvider) UserCacheRepository(_ context.Context) repository.UserCacheRepository {
 	if s.userCacheRepository == nil {
 		s.userCacheRepository = userCacheRepository.NewRepository(s.RedisClient())
 	}

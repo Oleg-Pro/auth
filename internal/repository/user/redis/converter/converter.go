@@ -8,6 +8,7 @@ import (
 	modelRepo "github.com/Oleg-Pro/auth/internal/repository/user/redis/model"
 )
 
+// ToUserFromRepo convert from redis repo to user model
 func ToUserFromRepo(user *modelRepo.User) *model.User {
 	var updatedAt sql.NullTime
 	if user.UpdatedAtNs != nil {

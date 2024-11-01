@@ -16,7 +16,7 @@ import (
 func TestCreate(t *testing.T) {
 	t.Parallel()
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
-	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository		
+	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository
 
 	type args struct {
 		ctx context.Context
@@ -44,11 +44,11 @@ func TestCreate(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name               string
-		args               args
-		want               int64
-		err                error
-		userRepositoryMock userRepositoryMockFunc
+		name                    string
+		args                    args
+		want                    int64
+		err                     error
+		userRepositoryMock      userRepositoryMockFunc
 		userCacheRepositoryMock userCacheRepositoryMockFunc
 	}{
 		{
@@ -66,11 +66,10 @@ func TestCreate(t *testing.T) {
 			},
 			userCacheRepositoryMock: func(mc *minimock.Controller) repository.UserCacheRepository {
 				mock := repoMocks.NewUserCacheRepositoryMock(mc)
-/*				mock.GetMock.Expect(ctx, id).Return(nil, model.ErrorNoteNotFound)
-				mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)				*/
+				/*				mock.GetMock.Expect(ctx, id).Return(nil, model.ErrorNoteNotFound)
+								mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)				*/
 				return mock
-			},			
-
+			},
 		},
 	}
 
@@ -79,7 +78,7 @@ func TestCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			userRepoMock := tt.userRepositoryMock(mc)
-			userCacheRepoMock := tt.userCacheRepositoryMock(mc)			
+			userCacheRepoMock := tt.userCacheRepositoryMock(mc)
 			api := user.New(userRepoMock, userCacheRepoMock)
 			resonse, err := api.Create(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)

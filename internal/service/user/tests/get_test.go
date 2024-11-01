@@ -17,7 +17,7 @@ import (
 func TestGet(t *testing.T) {
 	t.Parallel()
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
-	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository	
+	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository
 
 	type args struct {
 		ctx context.Context
@@ -35,7 +35,7 @@ func TestGet(t *testing.T) {
 		role         = model.RoleADMIN
 		createdAt    = gofakeit.Date()
 		updatedAt    = gofakeit.Date()
-		info = model.UserInfo{
+		info         = model.UserInfo{
 			Name:        name,
 			Email:       email,
 			Role:        role,
@@ -43,23 +43,23 @@ func TestGet(t *testing.T) {
 		}
 
 		userEntity = &model.User{
-			ID: id,
-			Info: info,
+			ID:        id,
+			Info:      info,
 			CreatedAt: createdAt,
-			UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true,},
+			UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
 		}
 	)
 
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name               string
-		args               args
-		want               *model.User
-		err                error
-		userRepositoryMock userRepositoryMockFunc
-		userCacheRepositoryMock userCacheRepositoryMockFunc		
-	}{	
+		name                    string
+		args                    args
+		want                    *model.User
+		err                     error
+		userRepositoryMock      userRepositoryMockFunc
+		userCacheRepositoryMock userCacheRepositoryMockFunc
+	}{
 		{
 			name: "get from database",
 			args: args{
@@ -86,10 +86,10 @@ func TestGet(t *testing.T) {
 			userCacheRepositoryMock: func(mc *minimock.Controller) repository.UserCacheRepository {
 				mock := repoMocks.NewUserCacheRepositoryMock(mc)
 				mock.GetMock.Expect(ctx, id).Return(nil, model.ErrorNoteNotFound)
-				mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)				
+				mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)
 				return mock
-			},			
-		},			
+			},
+		},
 		{
 			name: "get from cache",
 			args: args{
@@ -128,7 +128,7 @@ func TestGet(t *testing.T) {
 				mock := repoMocks.NewUserCacheRepositoryMock(mc)
 				mock.GetMock.Expect(ctx, id).Return(userEntity, nil)
 				return mock
-			},			
+			},
 		},
 	}
 

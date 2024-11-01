@@ -15,7 +15,7 @@ import (
 func TestDelete(t *testing.T) {
 	t.Parallel()
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
-	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository			
+	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository
 
 	type args struct {
 		ctx context.Context
@@ -33,12 +33,12 @@ func TestDelete(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name               string
-		args               args
-		want               int64
-		err                error
-		userRepositoryMock userRepositoryMockFunc
-		userCacheRepositoryMock userCacheRepositoryMockFunc				
+		name                    string
+		args                    args
+		want                    int64
+		err                     error
+		userRepositoryMock      userRepositoryMockFunc
+		userCacheRepositoryMock userCacheRepositoryMockFunc
 	}{
 		{
 			name: "success case",
@@ -55,10 +55,9 @@ func TestDelete(t *testing.T) {
 			},
 			userCacheRepositoryMock: func(mc *minimock.Controller) repository.UserCacheRepository {
 				mock := repoMocks.NewUserCacheRepositoryMock(mc)
-/*				mock.GetMock.Expect(ctx, id).Return(nil, model.ErrorNoteNotFound)
-				mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)				*/
+				mock.DeleteMock.Expect(ctx, id).Return(1, nil)
 				return mock
-			},			
+			},
 		},
 	}
 

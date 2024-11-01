@@ -19,6 +19,7 @@ type client struct {
 	config config.RedisConfig
 }
 
+// NewClient get client
 func NewClient(pool *redis.Pool, config config.RedisConfig) *client {
 	return &client{
 		pool:   pool,
@@ -27,7 +28,7 @@ func NewClient(pool *redis.Pool, config config.RedisConfig) *client {
 }
 
 func (c *client) HashSet(ctx context.Context, key string, values interface{}) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("HSET", redis.Args{key}.AddFlat(values)...)
 		if err != nil {
 			return err
@@ -43,7 +44,7 @@ func (c *client) HashSet(ctx context.Context, key string, values interface{}) er
 }
 
 func (c *client) Set(ctx context.Context, key string, value interface{}) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("SET", redis.Args{key}.Add(value)...)
 		if err != nil {
 			return err
@@ -60,7 +61,7 @@ func (c *client) Set(ctx context.Context, key string, value interface{}) error {
 
 func (c *client) HGetAll(ctx context.Context, key string) ([]interface{}, error) {
 	var values []interface{}
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
 		values, errEx = redis.Values(conn.Do("HGETALL", key))
 		if errEx != nil {
@@ -78,7 +79,7 @@ func (c *client) HGetAll(ctx context.Context, key string) ([]interface{}, error)
 
 func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
 	var value interface{}
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		var errEx error
 		value, errEx = conn.Do("GET", key)
 		if errEx != nil {
@@ -95,7 +96,7 @@ func (c *client) Get(ctx context.Context, key string) (interface{}, error) {
 }
 
 func (c *client) Expire(ctx context.Context, key string, expiration time.Duration) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("EXPIRE", key, int(expiration.Seconds()))
 		if err != nil {
 			return err
@@ -111,7 +112,7 @@ func (c *client) Expire(ctx context.Context, key string, expiration time.Duratio
 }
 
 func (c *client) Ping(ctx context.Context) error {
-	err := c.execute(ctx, func(ctx context.Context, conn redis.Conn) error {
+	err := c.execute(ctx, func(_ context.Context, conn redis.Conn) error {
 		_, err := conn.Do("PING")
 		if err != nil {
 			return err

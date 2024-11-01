@@ -6,7 +6,7 @@ import (
 )
 
 type serv struct {
-	userRepository repository.UserRepository
+	userRepository      repository.UserRepository
 	userCacheRepository repository.UserCacheRepository
 }
 
