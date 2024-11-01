@@ -16,6 +16,7 @@ import (
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
+	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository		
 
 	type args struct {
 		ctx context.Context
@@ -47,6 +48,7 @@ func TestUpdate(t *testing.T) {
 		want               int64
 		err                error
 		userRepositoryMock userRepositoryMockFunc
+		userCacheRepositoryMock userCacheRepositoryMockFunc				
 	}{
 		{
 			name: "success case",
@@ -62,6 +64,13 @@ func TestUpdate(t *testing.T) {
 				mock.UpdateMock.Expect(ctx, id, req).Return(id, nil)
 				return mock
 			},
+			userCacheRepositoryMock: func(mc *minimock.Controller) repository.UserCacheRepository {
+				mock := repoMocks.NewUserCacheRepositoryMock(mc)
+/*				mock.GetMock.Expect(ctx, id).Return(nil, model.ErrorNoteNotFound)
+				mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)				*/
+				return mock
+			},			
+
 		},
 	}
 
@@ -70,7 +79,8 @@ func TestUpdate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			userRepoMock := tt.userRepositoryMock(mc)
-			api := user.New(userRepoMock)
+			userCacheRepoMock := tt.userCacheRepositoryMock(mc)
+			api := user.New(userRepoMock, userCacheRepoMock)
 			resonse, err := api.Update(tt.args.ctx, tt.args.id, tt.args.req)
 			require.Equal(t, tt.err, err)
 			require.Equal(t, tt.want, resonse)
