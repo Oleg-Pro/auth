@@ -2,7 +2,7 @@ package redis
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 	"time"
 
 	"github.com/Oleg-Pro/auth/internal/client/cache"
@@ -13,6 +13,8 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 )
 
+const keyPrefix = "USER_"
+
 type repo struct {
 	cl cache.RedisClient
 }
@@ -20,6 +22,10 @@ type repo struct {
 // NewRepository UserCacheRepository constructor
 func NewRepository(cl cache.RedisClient) repository.UserCacheRepository {
 	return &repo{cl: cl}
+}
+
+func userKey(id int64) string {
+	return fmt.Sprintf("%s%d", keyPrefix, id)
 }
 
 func (r *repo) Create(ctx context.Context, id int64, info *model.UserInfo) (int64, error) {
@@ -32,7 +38,7 @@ func (r *repo) Create(ctx context.Context, id int64, info *model.UserInfo) (int6
 		CreatedAtNs: time.Now().UnixNano(),
 	}
 
-	idStr := strconv.FormatInt(id, 10)
+	idStr := userKey(id)
 	err := r.cl.HashSet(ctx, idStr, user)
 	if err != nil {
 		return 0, err
@@ -49,7 +55,7 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UserUpdateInfo)
 		Role:  int64(info.Role),
 	}
 
-	idStr := strconv.FormatInt(id, 10)
+	idStr := userKey(id)
 	err := r.cl.HashSet(ctx, idStr, user)
 	if err != nil {
 		return 0, err
@@ -59,7 +65,7 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UserUpdateInfo)
 }
 
 func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
-	idStr := strconv.FormatInt(id, 10)
+	idStr := userKey(id)
 	values, err := r.cl.HGetAll(ctx, idStr)
 	if err != nil {
 		return nil, err
@@ -79,7 +85,7 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 }
 
 func (r *repo) Delete(ctx context.Context, id int64) (int64, error) {
-	idStr := strconv.FormatInt(id, 10)
+	idStr := userKey(id)
 	err := r.cl.Expire(ctx, idStr, 0)
 	var numberOfRows int64
 	if err != nil {
