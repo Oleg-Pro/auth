@@ -8,6 +8,17 @@ import (
 // Role user role
 type Role int32
 
+const (
+	// RoleUNKNOWN Unknown role
+	RoleUNKNOWN Role = 0
+
+	// RoleUSER user role
+	RoleUSER Role = 1
+
+	// RoleADMIN admin role
+	RoleADMIN Role = 2
+)
+
 // UserInfo info about user
 type UserInfo struct {
 	Name        string

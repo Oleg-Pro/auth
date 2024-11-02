@@ -7,11 +7,11 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/Oleg-Pro/auth/internal/client/db"
 	"github.com/Oleg-Pro/auth/internal/model"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/Oleg-Pro/auth/internal/repository/user/converter"
 	modelRepo "github.com/Oleg-Pro/auth/internal/repository/user/model"
+	"github.com/Oleg-Pro/platform-common/pkg/db"
 )
 
 const (

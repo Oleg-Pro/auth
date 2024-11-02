@@ -5,27 +5,36 @@ import (
 	"log"
 
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
-	"github.com/Oleg-Pro/auth/internal/client/db"
-	"github.com/Oleg-Pro/auth/internal/client/db/pg"
-	"github.com/Oleg-Pro/auth/internal/client/db/transaction"
-	"github.com/Oleg-Pro/auth/internal/closer"
+	"github.com/Oleg-Pro/auth/internal/client/cache"
+	"github.com/Oleg-Pro/auth/internal/client/cache/redis"
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	userRepository "github.com/Oleg-Pro/auth/internal/repository/user"
+	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"
 	"github.com/Oleg-Pro/auth/internal/service"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
+	"github.com/Oleg-Pro/platform-common/pkg/closer"
+	"github.com/Oleg-Pro/platform-common/pkg/db"
+	"github.com/Oleg-Pro/platform-common/pkg/db/pg"
+	"github.com/Oleg-Pro/platform-common/pkg/db/transaction"
+	redigo "github.com/gomodule/redigo/redis"
 )
 
 type serviceProvider struct {
-	pgConfig   config.PGConfig
-	grpcConfig config.GRPCConfig
+	pgConfig    config.PGConfig
+	grpcConfig  config.GRPCConfig
+	redisConfig config.RedisConfig
 
-	dbClient       db.Client
-	txManager      db.TxManager
+	dbClient    db.Client
+	txManager   db.TxManager
+	redisPool   *redigo.Pool
+	redisClient cache.RedisClient
+
 	userRepository repository.UserRepository
 
-	userService       service.UserService
-	userImplemenation *userAPI.Implementation
+	userCacheRepository repository.UserCacheRepository
+	userService         service.UserService
+	userImplemenation   *userAPI.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -58,6 +67,19 @@ func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return s.grpcConfig
 }
 
+func (s *serviceProvider) RedisConfig() config.RedisConfig {
+	if s.redisConfig == nil {
+		cfg, err := config.NewRedisConfig()
+		if err != nil {
+			log.Fatalf("failed to get redis config: %s", err.Error())
+		}
+
+		s.redisConfig = cfg
+	}
+
+	return s.redisConfig
+}
+
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
 		client, err := pg.New(ctx, s.PGConfig().DSN())
@@ -84,6 +106,28 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return s.txManager
 }
 
+func (s *serviceProvider) RedisPool() *redigo.Pool {
+	if s.redisPool == nil {
+		s.redisPool = &redigo.Pool{
+			MaxIdle:     s.RedisConfig().MaxIdle(),
+			IdleTimeout: s.RedisConfig().IdleTimeout(),
+			DialContext: func(ctx context.Context) (redigo.Conn, error) {
+				return redigo.DialContext(ctx, "tcp", s.RedisConfig().Address())
+			},
+		}
+	}
+
+	return s.redisPool
+}
+
+func (s *serviceProvider) RedisClient() cache.RedisClient {
+	if s.redisClient == nil {
+		s.redisClient = redis.NewClient(s.RedisPool(), s.RedisConfig())
+	}
+
+	return s.redisClient
+}
+
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
 		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
@@ -92,12 +136,20 @@ func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRep
 	return s.userRepository
 }
 
-func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
-	if s.userService == nil {
-		s.userRepository = userService.New(s.UserRepository(ctx))
+func (s *serviceProvider) UserCacheRepository(_ context.Context) repository.UserCacheRepository {
+	if s.userCacheRepository == nil {
+		s.userCacheRepository = userCacheRepository.NewRepository(s.RedisClient())
 	}
 
-	return s.userRepository
+	return s.userCacheRepository
+}
+
+func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
+	if s.userService == nil {
+		s.userService = userService.New(s.UserRepository(ctx), s.UserCacheRepository(ctx))
+	}
+
+	return s.userService
 }
 
 func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Implementation {

@@ -6,9 +6,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/Oleg-Pro/auth/internal/closer"
 	"github.com/Oleg-Pro/auth/internal/config"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
+	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
