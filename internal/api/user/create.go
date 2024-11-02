@@ -16,8 +16,7 @@ var ErrPasswordsAreNotEqual = errors.New("passwords are not equal")
 // Create implementation of Create User Api Method
 func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	if req.GetPasword() != req.PasswordConfirm {
-		err := ErrPasswordsAreNotEqual
-		return nil, err
+		return nil, ErrPasswordsAreNotEqual
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.GetPasword()), bcrypt.DefaultCost)
