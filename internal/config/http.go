@@ -12,6 +12,7 @@ const (
 	httpPortEnvName = "HTTP_PORT"
 )
 
+// HTTPConfig interface
 type HTTPConfig interface {
 	Address() string
 }
@@ -21,6 +22,7 @@ type httpConfig struct {
 	port string
 }
 
+// NewHTTPConfig HTTPConfig constructor
 func NewHTTPConfig() (HTTPConfig, error) {
 	host := os.Getenv(httpHostEnvName)
 	if len(host) == 0 {

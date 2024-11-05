@@ -23,7 +23,7 @@ import (
 type serviceProvider struct {
 	pgConfig    config.PGConfig
 	grpcConfig  config.GRPCConfig
-	httpConfig    config.HTTPConfig	
+	httpConfig  config.HTTPConfig
 	redisConfig config.RedisConfig
 
 	dbClient    db.Client

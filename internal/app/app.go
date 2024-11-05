@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/Oleg-Pro/auth/internal/config"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
@@ -22,8 +23,8 @@ import (
 type App struct {
 	serviceProvider *serviceProvider
 	grpcServer      *grpc.Server
-	httpServer *http.Server
-	configPath      string	
+	httpServer      *http.Server
+	configPath      string
 }
 
 // NewApp creats App
@@ -55,10 +56,10 @@ func (a *App) Run() error {
 	go func() {
 		defer wg.Done()
 
-		err := a.runGRPCServer()		
+		err := a.runGRPCServer()
 		if err != nil {
 			log.Fatalf("Failed to run grpc server : %v", err)
-		}		
+		}
 	}()
 
 	go func() {
@@ -123,8 +124,6 @@ func (a *App) runGRPCServer() error {
 		return err
 	}
 
-	
-
 	err = a.grpcServer.Serve(listener)
 	if err != nil {
 		log.Fatalf("Failed to serve: %v", err)
@@ -143,7 +142,6 @@ func (a *App) runHTTPServer() error {
 
 	return nil
 }
-
 
 func (a *App) initHTTPServer(ctx context.Context) error {
 
@@ -165,8 +163,9 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	})
 
 	a.httpServer = &http.Server{
-		Addr: a.serviceProvider.HTTPConfig().Address(),
-		Handler: corsMiddleWare.Handler(mux),
+		Addr:        a.serviceProvider.HTTPConfig().Address(),
+		Handler:     corsMiddleWare.Handler(mux),
+		ReadTimeout: 3 * time.Second,
 	}
 
 	return nil
