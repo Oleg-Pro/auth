@@ -15,6 +15,11 @@ var ErrPasswordsAreNotEqual = errors.New("passwords are not equal")
 
 // Create implementation of Create User Api Method
 func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
+	err := req.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	if req.GetPasword() != req.PasswordConfirm {
 		return nil, ErrPasswordsAreNotEqual
 	}

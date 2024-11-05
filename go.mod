@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/Oleg-Pro/platform-common v0.0.0-20241030171438-d230043323fa
 	github.com/brianvoe/gofakeit/v6 v6.28.0
+	github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/fatih/color v1.17.0
 	github.com/gojuno/minimock/v3 v3.4.1
 	github.com/golang/protobuf v1.5.4
