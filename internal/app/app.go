@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Oleg-Pro/auth/internal/config"
+	"github.com/Oleg-Pro/auth/internal/interceptor"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -109,7 +110,10 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	a.grpcServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+	)
 	reflection.Register(a.grpcServer)
 	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImplementation(ctx))
 
