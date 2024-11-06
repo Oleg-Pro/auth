@@ -13,6 +13,9 @@ import (
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/interceptor"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
+
+	// To make statik virtual system work
+	_ "github.com/Oleg-Pro/auth/statik"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rakyll/statik/fs"
@@ -20,7 +23,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	_ "github.com/Oleg-Pro/auth/statik"	
 )
 
 // App type
@@ -208,8 +210,8 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.StripPrefix("/", http.FileServer(statikFs)))
 
-	swaggerJson := "/api.swagger.json"
-	mux.Handle(swaggerJson, serveSwaggerFile(swaggerJson))
+	swaggerJSON := "/api.swagger.json"
+	mux.Handle(swaggerJSON, serveSwaggerFile(swaggerJSON))
 
 	a.swaggerServer = &http.Server{
 		Addr:        a.serviceProvider.SwaggerConfig().Address(),
@@ -221,7 +223,7 @@ func (a *App) initSwaggerServer(_ context.Context) error {
 }
 
 func serveSwaggerFile(path string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		log.Printf("Serving swagger file: %s", path)
 
 		statikFs, err := fs.New()
@@ -237,7 +239,12 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer file.Close()
+		defer func() {
+			err = file.Close()
+			if err != nil {
+				log.Printf("Failed to close file: %v", err)
+			}
+		}()
 
 		log.Printf("Read swagger file: %s", path)
 
