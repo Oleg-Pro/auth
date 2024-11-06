@@ -20,7 +20,6 @@ get-deps:
 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 
-
 install-golangci-lint:
 	GOBIN=$(LOCAL_BIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0
 
@@ -46,16 +45,6 @@ generate_user_api:
 	--openapiv2_out=allow_merge=true,merge_file_name=api:pkg/swagger \
 	--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2 \
 	api/user_v1/user.proto
-
-
-#	protoc --proto_path api/user_v1 --proto_path vendor.protogen \
-	--go_out=pkg/user_v1 --go_opt=paths=source_relative \
-	--plugin=protoc-gen-go=bin/protoc-gen-go \
-	--go-grpc_out=pkg/user_v1 --go-grpc_opt=paths=source_relative \
-	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
-	--grpc-gateway_out=pkg/user_v1 --grpc-gateway_opt=paths=source_relative \
-	--plugin=protoc-gen-grpc-gateway=bin/protoc-gen-grpc-gateway \	
-#	api/user_v1/user.proto
 
 local-migration-status:
 	$(LOCAL_BIN)/goose -dir ${LOCAL_MIGRATION_DIR} postgres ${LOCAL_MIGRATION_DSN} status -v
