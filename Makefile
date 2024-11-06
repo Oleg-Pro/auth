@@ -28,6 +28,7 @@ lint:
 	$(LOCAL_BIN)/golangci-lint run --fix ./... --config .golangci.pipeline.yaml
 
 generate:
+	mkdir -p pkg/swagger
 	make generate_user_api
 
 generate_user_api:
@@ -41,6 +42,8 @@ generate_user_api:
 	--plugin=protoc-gen-validate=bin/protoc-gen-validate \
 	--grpc-gateway_out=pkg/user_v1 --grpc-gateway_opt=paths=source_relative \
 	--plugin=protoc-gen-grpc-gateway=bin/protoc-gen-grpc-gateway \
+	--openapiv2_out=allow_merge=true,merge_file_name=api:pkg/swagger \
+	--plugin=protoc-gen-openapiv2=bin/protoc-gen-openapiv2 \
 	api/user_v1/user.proto
 
 
