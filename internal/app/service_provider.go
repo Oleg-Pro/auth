@@ -4,14 +4,18 @@ import (
 	"context"
 	"log"
 
+	"github.com/IBM/sarama"
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
 	"github.com/Oleg-Pro/auth/internal/client/cache"
 	"github.com/Oleg-Pro/auth/internal/client/cache/redis"
+	"github.com/Oleg-Pro/auth/internal/client/kafka"
+	kafkaConsumer "github.com/Oleg-Pro/auth/internal/client/kafka/consumer"
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	userRepository "github.com/Oleg-Pro/auth/internal/repository/user"
 	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"
 	"github.com/Oleg-Pro/auth/internal/service"
+	userSaverConsumer "github.com/Oleg-Pro/auth/internal/service/consumer/user_saver"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/Oleg-Pro/platform-common/pkg/db"
@@ -21,16 +25,22 @@ import (
 )
 
 type serviceProvider struct {
-	pgConfig      config.PGConfig
-	grpcConfig    config.GRPCConfig
-	httpConfig    config.HTTPConfig
-	swaggerConfig config.SwaggerConfig
-	redisConfig   config.RedisConfig
+	pgConfig            config.PGConfig
+	kafkaConsumerConfig config.KafkaConsumerConfig
+	grpcConfig          config.GRPCConfig
+	httpConfig          config.HTTPConfig
+	swaggerConfig       config.SwaggerConfig
+	redisConfig         config.RedisConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
+
+	userSaverConsumer    service.ConsumerService
+	consumer             kafka.Consumer
+	consumerGroup        sarama.ConsumerGroup
+	consumerGroupHandler *kafkaConsumer.GroupHandler
 
 	userRepository repository.UserRepository
 
@@ -154,6 +164,68 @@ func (s *serviceProvider) RedisClient() cache.RedisClient {
 	}
 
 	return s.redisClient
+}
+
+func (s *serviceProvider) KafkaConsumerConfig() config.KafkaConsumerConfig {
+	if s.kafkaConsumerConfig == nil {
+		cfg, err := config.NewKafkaConsumerConfig()
+		if err != nil {
+			log.Fatalf("failed to get kafka consumer config: %s", err.Error())
+		}
+
+		s.kafkaConsumerConfig = cfg
+	}
+
+	return s.kafkaConsumerConfig
+}
+
+func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.ConsumerService {
+	if s.userSaverConsumer == nil {
+		s.userSaverConsumer = userSaverConsumer.NewService(
+			s.userService,
+			s.Consumer(),
+			s.KafkaConsumerConfig().TopicName(),
+		)
+	}
+
+	return s.userSaverConsumer
+}
+
+func (s *serviceProvider) Consumer() kafka.Consumer {
+	if s.consumer == nil {
+		s.consumer = kafkaConsumer.NewConsumer(
+			s.ConsumerGroup(),
+			s.ConsumerGroupHandler(),
+		)
+		closer.Add(s.consumer.Close)
+	}
+
+	return s.consumer
+}
+
+func (s *serviceProvider) ConsumerGroup() sarama.ConsumerGroup {
+	if s.consumerGroup == nil {
+		consumerGroup, err := sarama.NewConsumerGroup(
+			s.KafkaConsumerConfig().Brokers(),
+			s.KafkaConsumerConfig().GroupID(),
+			s.KafkaConsumerConfig().Config(),
+		)
+		if err != nil {
+			log.Fatalf("failed to create consumer group: %v", err)
+		}
+
+		s.consumerGroup = consumerGroup
+	}
+
+	return s.consumerGroup
+}
+
+func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.GroupHandler {
+	if s.consumerGroupHandler == nil {
+		s.consumerGroupHandler = kafkaConsumer.NewGroupHandler()
+	}
+
+	return s.consumerGroupHandler
 }
 
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
