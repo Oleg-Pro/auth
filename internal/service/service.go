@@ -13,3 +13,7 @@ type UserService interface {
 	Get(ctx context.Context, id int64) (*model.User, error)
 	Delete(ctx context.Context, id int64) (int64, error)
 }
+
+type ConsumerService interface {
+	RunConsumer(ctx context.Context) error
+}
