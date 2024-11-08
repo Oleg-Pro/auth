@@ -38,7 +38,10 @@ func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 		return nil, err
 	}
 
-	i.userSaverProducer.Send(ctx, info)
+	err = i.userSaverProducer.Send(ctx, info)
+	if err != nil {
+		return nil, err
+	}
 
 	return &desc.CreateResponse{
 		Id: userID,

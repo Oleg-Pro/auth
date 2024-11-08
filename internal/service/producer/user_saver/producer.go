@@ -2,35 +2,37 @@ package user_saver
 
 import (
 	"context"
-	"encoding/json"		
+	"encoding/json"
 	"log"
+
 	"github.com/IBM/sarama"
 	"github.com/Oleg-Pro/auth/internal/model"
 )
 
 type service struct {
-	producer sarama.SyncProducer
+	producer  sarama.SyncProducer
 	topicName string
 }
 
-func NewUserSaverProducer(producer sarama.SyncProducer, topicName string) *service {	
+// NewUserSaverProducer UserSaverProducer constructor
+func NewUserSaverProducer(producer sarama.SyncProducer, topicName string) *service {
 	return &service{
-		producer: producer,
+		producer:  producer,
 		topicName: topicName,
 	}
 }
 
-// UserSaverProducer
+// UserSaverProducer interface
 type UserSaverProducer interface {
 	Send(ctx context.Context, info *model.UserInfo) error
 }
 
-func (a *service) Send(ctx context.Context, info *model.UserInfo) error {
+func (a *service) Send(_ context.Context, info *model.UserInfo) error {
 
 	data, err := json.Marshal(info)
 	if err != nil {
 		return err
-	}	
+	}
 
 	msg := &sarama.ProducerMessage{
 		Topic: a.topicName,
@@ -47,18 +49,3 @@ func (a *service) Send(ctx context.Context, info *model.UserInfo) error {
 
 	return nil
 }
-
-
-/*func newSyncProducer(brokerList []string) (sarama.SyncProducer, error) {
-	config := sarama.NewConfig()
-	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Retry.Max = 5
-	config.Producer.Return.Successes = true
-
-	producer, err := sarama.NewSyncProducer(brokerList, config)
-	if err != nil {
-		return nil, err
-	}
-
-	return producer, nil
-}*/

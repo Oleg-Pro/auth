@@ -10,7 +10,7 @@ import (
 	"github.com/Oleg-Pro/auth/internal/model"
 )
 
-func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessage) error {
+func (s *service) UserSaveHandler(_ context.Context, msg *sarama.ConsumerMessage) error {
 	userInfo := &model.UserInfo{}
 	err := json.Unmarshal(msg.Value, userInfo)
 	if err != nil {
@@ -18,12 +18,5 @@ func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessa
 	}
 
 	log.Printf("New User Created: %#v", userInfo)
-/*	id, err := s.userService.Create(ctx, userInfo)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("User with id %d created\n", id)*/
-
 	return nil
 }

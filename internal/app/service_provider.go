@@ -16,7 +16,7 @@ import (
 	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"
 	"github.com/Oleg-Pro/auth/internal/service"
 	userSaverConsumer "github.com/Oleg-Pro/auth/internal/service/consumer/user_saver"
-	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"	
+	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/Oleg-Pro/platform-common/pkg/db"
@@ -45,7 +45,7 @@ type serviceProvider struct {
 
 	producer sarama.SyncProducer
 
-	userSaverProducer userSaverProducer.UserSaverProducer	
+	userSaverProducer userSaverProducer.UserSaverProducer
 
 	userRepository repository.UserRepository
 
@@ -238,7 +238,7 @@ func (s *serviceProvider) Producer() sarama.SyncProducer {
 		producer, err := newSyncProducer(s.KafkaConsumerConfig().Brokers())
 		if err != nil {
 			log.Fatalf("failed to start producer: %v\n", err.Error())
-		}	
+		}
 
 		s.producer = producer
 		closer.Add(s.producer.Close)
@@ -248,7 +248,7 @@ func (s *serviceProvider) Producer() sarama.SyncProducer {
 }
 
 func (s *serviceProvider) UserSaverProducer() userSaverProducer.UserSaverProducer {
-	if (s.userSaverProducer == nil) {
+	if s.userSaverProducer == nil {
 		s.userSaverProducer = userSaverProducer.NewUserSaverProducer(s.Producer(), s.KafkaConsumerConfig().TopicName())
 	}
 
@@ -300,4 +300,3 @@ func newSyncProducer(brokerList []string) (sarama.SyncProducer, error) {
 
 	return producer, nil
 }
-
