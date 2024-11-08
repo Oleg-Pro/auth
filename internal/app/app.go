@@ -60,8 +60,6 @@ func (a *App) Run() error {
 
 	}()
 
-	//	ctx, cancel := context.WithCancel(ctx)
-
 	wg := &sync.WaitGroup{}
 	wg.Add(3)
 
