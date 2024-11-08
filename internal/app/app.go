@@ -52,7 +52,7 @@ func NewApp(ctx context.Context) (*App, error) {
 }
 
 // Run runs App
-func (a *App) Run(ctx context.Context) error {
+func (a *App) Run() error {
 
 	defer func() {
 		closer.CloseAll()
@@ -60,10 +60,10 @@ func (a *App) Run(ctx context.Context) error {
 
 	}()
 
-	ctx, cancel := context.WithCancel(ctx)
+//	ctx, cancel := context.WithCancel(ctx)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(4)
+	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
@@ -92,16 +92,16 @@ func (a *App) Run(ctx context.Context) error {
 		}
 	}()
 
-	go func() {
+/*	go func() {
 		defer wg.Done()
 		err := a.serviceProvider.UserSaverConsumer(ctx).RunConsumer(ctx)
 		if err != nil {
 			log.Printf("failed to run consumer: %s", err.Error())
 		}
-	}()
+	}()*/
 
-	gracefulShutdown(ctx, cancel, wg)
-	//	wg.Wait()
+//	gracefulShutdown(ctx, cancel, wg)
+	wg.Wait()
 
 	return nil
 }

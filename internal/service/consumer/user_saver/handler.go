@@ -17,6 +17,7 @@ func (s *service) UserSaveHandler(ctx context.Context, msg *sarama.ConsumerMessa
 		return err
 	}
 
+	log.Printf("New User Created: %#v", userInfo)
 	id, err := s.userService.Create(ctx, userInfo)
 	if err != nil {
 		return err

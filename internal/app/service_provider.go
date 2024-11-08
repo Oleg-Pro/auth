@@ -179,10 +179,10 @@ func (s *serviceProvider) KafkaConsumerConfig() config.KafkaConsumerConfig {
 	return s.kafkaConsumerConfig
 }
 
-func (s *serviceProvider) UserSaverConsumer(_ context.Context) service.ConsumerService {
+func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.ConsumerService {
 	if s.userSaverConsumer == nil {
 		s.userSaverConsumer = userSaverConsumer.NewService(
-			s.userService,
+			s.UserService(ctx),
 			s.Consumer(),
 			s.KafkaConsumerConfig().TopicName(),
 		)
