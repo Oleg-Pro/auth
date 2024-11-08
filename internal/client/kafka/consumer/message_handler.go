@@ -7,12 +7,15 @@ import (
 	"github.com/IBM/sarama"
 )
 
+// Handler handler for kafka consumer
 type Handler func(ctx context.Context, msg *sarama.ConsumerMessage) error
 
+// GroupHandler struct
 type GroupHandler struct {
 	msgHandler Handler
 }
 
+// NewGroupHandler GroupHandler constructor
 func NewGroupHandler() *GroupHandler {
 	return &GroupHandler{}
 }

@@ -4,18 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"log"
-//	"strings"
 
 	"github.com/IBM/sarama"
-	"github.com/brianvoe/gofakeit/v6"
-
-	"github.com/Oleg-Pro/auth/internal/config"	
+	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/model"
-)
-
-const (
-	brokerAddress = "localhost:9092, localhost:9093, localhost:9094"
-	topicName     = "test-topic"
+	"github.com/brianvoe/gofakeit/v6"
 )
 
 func main() {
@@ -25,9 +18,8 @@ func main() {
 
 	err := config.Load(configPath)
 	if err != nil {
-		log.Fatalf("Load confi error: %v", err) 
+		log.Fatalf("Load confi error: %v", err)
 	}
-
 
 	kafkaConfig, err := config.NewKafkaConsumerConfig()
 	if err != nil {
@@ -36,8 +28,7 @@ func main() {
 
 	log.Printf("Kafka Config: %#v", kafkaConfig)
 
-
-	producer, err := newSyncProducer(/*strings.Split(brokerAddress, ",")*/kafkaConfig.Brokers())
+	producer, err := newSyncProducer( /*strings.Split(brokerAddress, ",")*/ kafkaConfig.Brokers())
 	if err != nil {
 		log.Fatalf("failed to start producer: %v\n", err.Error())
 	}
@@ -47,8 +38,8 @@ func main() {
 			log.Fatalf("failed to close producer: %v\n", err.Error())
 		}
 	}()
-	
-/*	info := model.UserInfo{
+
+	/*	info := model.UserInfo{
 		Title:   gofakeit.BookTitle(),
 		Content: gofakeit.Paragraph(3, 7, 5, " "),
 	}*/
@@ -57,7 +48,7 @@ func main() {
 		Name:        gofakeit.Name(),
 		Email:       gofakeit.Email(),
 		PaswordHash: "$2a$10$ovdAkan0WZ4LSNkOrd1hLuYQpjq6Ree1GES/6GPU3GcEO1XIzjjFG",
-		Role:        model.RoleUSER,		
+		Role:        model.RoleUSER,
 	}
 
 	data, err := json.Marshal(info)

@@ -14,6 +14,7 @@ const (
 	topicNameName  = "KAFKA_CREATE_USER_TOPIC"
 )
 
+// KafkaConsumerConfig interface
 type KafkaConsumerConfig interface {
 	Brokers() []string
 	GroupID() string
@@ -27,6 +28,7 @@ type kafkaConsumerConfig struct {
 	topicName string
 }
 
+// NewKafkaConsumerConfig KafkaConsumerConfig constructor
 func NewKafkaConsumerConfig() (*kafkaConsumerConfig, error) {
 	brokersStr := os.Getenv(brokersEnvName)
 	if len(brokersStr) == 0 {

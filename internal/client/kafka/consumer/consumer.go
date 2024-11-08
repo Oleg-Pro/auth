@@ -14,6 +14,7 @@ type consumer struct {
 	consumerGroupHandler *GroupHandler
 }
 
+// NewConsumer consumer constructor
 func NewConsumer(
 	consumerGroup sarama.ConsumerGroup,
 	consumerGroupHandler *GroupHandler,

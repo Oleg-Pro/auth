@@ -14,6 +14,7 @@ type UserService interface {
 	Delete(ctx context.Context, id int64) (int64, error)
 }
 
+// ConsumerService interface
 type ConsumerService interface {
 	RunConsumer(ctx context.Context) error
 }

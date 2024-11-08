@@ -15,6 +15,7 @@ type service struct {
 	topicName   string
 }
 
+// NewService create User Saver Consumer
 func NewService(
 	userService def.UserService,
 	consumer kafka.Consumer,
@@ -27,6 +28,7 @@ func NewService(
 	}
 }
 
+// RunConsumer run consumer
 func (s *service) RunConsumer(ctx context.Context) error {
 	for {
 		select {
