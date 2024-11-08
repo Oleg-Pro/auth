@@ -16,6 +16,7 @@ import (
 	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"
 	"github.com/Oleg-Pro/auth/internal/service"
 	userSaverConsumer "github.com/Oleg-Pro/auth/internal/service/consumer/user_saver"
+	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"	
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/Oleg-Pro/platform-common/pkg/db"
@@ -41,6 +42,10 @@ type serviceProvider struct {
 	consumer             kafka.Consumer
 	consumerGroup        sarama.ConsumerGroup
 	consumerGroupHandler *kafkaConsumer.GroupHandler
+
+	producer sarama.SyncProducer
+
+	userSaverProducer userSaverProducer.UserSaverProducer	
 
 	userRepository repository.UserRepository
 
@@ -228,6 +233,28 @@ func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.GroupHandler {
 	return s.consumerGroupHandler
 }
 
+func (s *serviceProvider) Producer() sarama.SyncProducer {
+	if s.producer == nil {
+		producer, err := newSyncProducer(s.KafkaConsumerConfig().Brokers())
+		if err != nil {
+			log.Fatalf("failed to start producer: %v\n", err.Error())
+		}	
+
+		s.producer = producer
+		closer.Add(s.producer.Close)
+	}
+
+	return s.producer
+}
+
+func (s *serviceProvider) UserSaverProducer() userSaverProducer.UserSaverProducer {
+	if (s.userSaverProducer == nil) {
+		s.userSaverProducer = userSaverProducer.NewUserSaverProducer(s.Producer(), s.KafkaConsumerConfig().TopicName())
+	}
+
+	return s.userSaverProducer
+}
+
 func (s *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if s.userRepository == nil {
 		s.userRepository = userRepository.NewRepository(s.DBClient(ctx))
@@ -255,7 +282,22 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Implementation {
 
 	if s.userImplemenation == nil {
-		s.userImplemenation = userAPI.NewImplementation(s.UserService(ctx))
+		s.userImplemenation = userAPI.NewImplementation(s.UserService(ctx), s.UserSaverProducer())
 	}
 	return s.userImplemenation
 }
+
+func newSyncProducer(brokerList []string) (sarama.SyncProducer, error) {
+	config := sarama.NewConfig()
+	config.Producer.RequiredAcks = sarama.WaitForAll
+	config.Producer.Retry.Max = 5
+	config.Producer.Return.Successes = true
+
+	producer, err := sarama.NewSyncProducer(brokerList, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return producer, nil
+}
+

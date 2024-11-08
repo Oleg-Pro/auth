@@ -28,7 +28,7 @@ func main() {
 
 	log.Printf("Kafka Config: %#v", kafkaConfig)
 
-	producer, err := newSyncProducer( /*strings.Split(brokerAddress, ",")*/ kafkaConfig.Brokers())
+	producer, err := newSyncProducer(kafkaConfig.Brokers())
 	if err != nil {
 		log.Fatalf("failed to start producer: %v\n", err.Error())
 	}

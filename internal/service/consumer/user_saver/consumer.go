@@ -38,7 +38,6 @@ func (s *service) RunConsumer(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
-
 		}
 	}
 }
