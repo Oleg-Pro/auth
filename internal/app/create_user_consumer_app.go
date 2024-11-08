@@ -4,14 +4,17 @@ import (
 	"context"
 	"log"
 	"sync"
+
+	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
-	"github.com/Oleg-Pro/auth/internal/config"	
 )
 
+// CreateUserConsumerApp application for kafka consumer
 type CreateUserConsumerApp struct {
 	serviceProvider *serviceProvider
 }
 
+// NewCreateUserConsumerApp CreateUserConsumerApp constructor
 func NewCreateUserConsumerApp(ctx context.Context) (*CreateUserConsumerApp, error) {
 	a := &CreateUserConsumerApp{}
 
@@ -23,6 +26,7 @@ func NewCreateUserConsumerApp(ctx context.Context) (*CreateUserConsumerApp, erro
 	return a, nil
 }
 
+// Run run app
 func (a *CreateUserConsumerApp) Run(ctx context.Context) error {
 	defer func() {
 		closer.CloseAll()

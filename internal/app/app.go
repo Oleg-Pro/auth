@@ -60,7 +60,7 @@ func (a *App) Run() error {
 
 	}()
 
-//	ctx, cancel := context.WithCancel(ctx)
+	//	ctx, cancel := context.WithCancel(ctx)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(3)
@@ -92,7 +92,7 @@ func (a *App) Run() error {
 		}
 	}()
 
-/*	go func() {
+	/*	go func() {
 		defer wg.Done()
 		err := a.serviceProvider.UserSaverConsumer(ctx).RunConsumer(ctx)
 		if err != nil {
@@ -100,7 +100,7 @@ func (a *App) Run() error {
 		}
 	}()*/
 
-//	gracefulShutdown(ctx, cancel, wg)
+	//	gracefulShutdown(ctx, cancel, wg)
 	wg.Wait()
 
 	return nil
