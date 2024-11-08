@@ -39,11 +39,6 @@ func main() {
 		}
 	}()
 
-	/*	info := model.UserInfo{
-		Title:   gofakeit.BookTitle(),
-		Content: gofakeit.Paragraph(3, 7, 5, " "),
-	}*/
-
 	info := model.UserInfo{
 		Name:        gofakeit.Name(),
 		Email:       gofakeit.Email(),
