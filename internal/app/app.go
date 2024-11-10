@@ -90,15 +90,6 @@ func (a *App) Run() error {
 		}
 	}()
 
-	/*	go func() {
-		defer wg.Done()
-		err := a.serviceProvider.UserSaverConsumer(ctx).RunConsumer(ctx)
-		if err != nil {
-			log.Printf("failed to run consumer: %s", err.Error())
-		}
-	}()*/
-
-	//	gracefulShutdown(ctx, cancel, wg)
 	wg.Wait()
 
 	return nil

@@ -25,6 +25,8 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 )
 
+const kafkaProducerRetryMax = 5
+
 type serviceProvider struct {
 	pgConfig            config.PGConfig
 	kafkaConsumerConfig config.KafkaConsumerConfig
@@ -233,9 +235,9 @@ func (s *serviceProvider) ConsumerGroupHandler() *kafkaConsumer.GroupHandler {
 	return s.consumerGroupHandler
 }
 
-func (s *serviceProvider) Producer() sarama.SyncProducer {
+func (s *serviceProvider) Producer(retryMax int) sarama.SyncProducer {
 	if s.producer == nil {
-		producer, err := newSyncProducer(s.KafkaConsumerConfig().Brokers())
+		producer, err := newSyncProducer(s.KafkaConsumerConfig().Brokers(), retryMax)
 		if err != nil {
 			log.Fatalf("failed to start producer: %v\n", err.Error())
 		}
@@ -247,9 +249,9 @@ func (s *serviceProvider) Producer() sarama.SyncProducer {
 	return s.producer
 }
 
-func (s *serviceProvider) UserSaverProducer() userSaverProducer.UserSaverProducer {
+func (s *serviceProvider) UserSaverProducer(retryMax int) userSaverProducer.UserSaverProducer {
 	if s.userSaverProducer == nil {
-		s.userSaverProducer = userSaverProducer.NewUserSaverProducer(s.Producer(), s.KafkaConsumerConfig().TopicName())
+		s.userSaverProducer = userSaverProducer.NewUserSaverProducer(s.Producer(retryMax), s.KafkaConsumerConfig().TopicName())
 	}
 
 	return s.userSaverProducer
@@ -282,15 +284,15 @@ func (s *serviceProvider) UserService(ctx context.Context) service.UserService {
 func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Implementation {
 
 	if s.userImplemenation == nil {
-		s.userImplemenation = userAPI.NewImplementation(s.UserService(ctx), s.UserSaverProducer())
+		s.userImplemenation = userAPI.NewImplementation(s.UserService(ctx), s.UserSaverProducer(kafkaProducerRetryMax))
 	}
 	return s.userImplemenation
 }
 
-func newSyncProducer(brokerList []string) (sarama.SyncProducer, error) {
+func newSyncProducer(brokerList []string, retryMax int) (sarama.SyncProducer, error) {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Retry.Max = 5
+	config.Producer.Retry.Max = retryMax
 	config.Producer.Return.Successes = true
 
 	producer, err := sarama.NewSyncProducer(brokerList, config)
