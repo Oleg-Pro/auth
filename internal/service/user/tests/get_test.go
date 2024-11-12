@@ -110,17 +110,6 @@ func TestGet(t *testing.T) {
 			err: nil,
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				/*mock.GetMock.Expect(ctx, id).Return(&model.User{
-					ID: id,
-					Info: model.UserInfo{
-						Name:        name,
-						Email:       email,
-						Role:        role,
-						PaswordHash: passwordHash,
-					},
-					CreatedAt: createdAt,
-					UpdatedAt: sql.NullTime{Time: updatedAt, Valid: true},
-				}, nil)*/
 				return mock
 			},
 

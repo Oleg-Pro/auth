@@ -7,6 +7,8 @@ import (
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
 	"github.com/Oleg-Pro/auth/internal/service"
 	serviceMocks "github.com/Oleg-Pro/auth/internal/service/mocks"
+	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"
+	userSaverProducerMocks "github.com/Oleg-Pro/auth/internal/service/producer/user_saver/mocks"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
@@ -17,6 +19,7 @@ import (
 func TestDelete(t *testing.T) {
 	t.Parallel()
 	type userServiceMockFunc func(mc *minimock.Controller) service.UserService
+	type userSaverProducerMockFunc func(mc *minimock.Controller) userSaverProducer.UserSaverProducer
 
 	type args struct {
 		ctx context.Context
@@ -39,11 +42,12 @@ func TestDelete(t *testing.T) {
 	defer t.Cleanup(mc.Finish)
 
 	tests := []struct {
-		name            string
-		args            args
-		want            *empty.Empty
-		err             error
-		userServiceMock userServiceMockFunc
+		name                  string
+		args                  args
+		want                  *empty.Empty
+		err                   error
+		userServiceMock       userServiceMockFunc
+		userSaverProducerMock userSaverProducerMockFunc
 	}{
 		{
 			name: "success case",
@@ -58,6 +62,10 @@ func TestDelete(t *testing.T) {
 				mock.DeleteMock.Expect(ctx, id).Return(int64(numberOfRows), nil)
 				return mock
 			},
+			userSaverProducerMock: func(mc *minimock.Controller) userSaverProducer.UserSaverProducer {
+				mock := userSaverProducerMocks.NewUserSaverProducerMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -66,7 +74,8 @@ func TestDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			userServiceMock := tt.userServiceMock(mc)
-			api := userAPI.NewImplementation(userServiceMock)
+			userSaverProducerMock := tt.userSaverProducerMock(mc)
+			api := userAPI.NewImplementation(userServiceMock, userSaverProducerMock)
 			response, err := api.Delete(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)
 			require.Equal(t, tt.want, response)

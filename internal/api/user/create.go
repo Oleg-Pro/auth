@@ -25,15 +25,21 @@ func (i *Implementation) Create(ctx context.Context, req *desc.CreateRequest) (*
 		return nil, err
 	}
 
-	userID, err := i.userService.Create(ctx, &model.UserInfo{
+	info := &model.UserInfo{
 		Name:        req.GetName(),
 		Email:       req.GetEmail(),
 		PaswordHash: string(passwordHash),
 		Role:        model.Role(req.GetRole()),
-	})
+	}
+	userID, err := i.userService.Create(ctx, info)
 
 	if err != nil {
 		log.Printf("Failed to insert user: %v", err)
+		return nil, err
+	}
+
+	err = i.userSaverProducer.Send(ctx, info)
+	if err != nil {
 		return nil, err
 	}
 

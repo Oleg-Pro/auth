@@ -66,8 +66,6 @@ func TestCreate(t *testing.T) {
 			},
 			userCacheRepositoryMock: func(mc *minimock.Controller) repository.UserCacheRepository {
 				mock := repoMocks.NewUserCacheRepositoryMock(mc)
-				/*				mock.GetMock.Expect(ctx, id).Return(nil, model.ErrorNoteNotFound)
-								mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)				*/
 				return mock
 			},
 		},
