@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/IBM/sarama"
+	authAPI "github.com/Oleg-Pro/auth/internal/api/auth"		
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
 	"github.com/Oleg-Pro/auth/internal/client/cache"
 	"github.com/Oleg-Pro/auth/internal/client/cache/redis"
@@ -54,6 +55,7 @@ type serviceProvider struct {
 	userCacheRepository repository.UserCacheRepository
 	userService         service.UserService
 	userImplemenation   *userAPI.Implementation
+	authImplemenation   *authAPI.Implemenation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -287,6 +289,14 @@ func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Imple
 		s.userImplemenation = userAPI.NewImplementation(s.UserService(ctx), s.UserSaverProducer(kafkaProducerRetryMax))
 	}
 	return s.userImplemenation
+}
+
+func (s *serviceProvider) AuthImplementation(ctx context.Context) *authAPI.Implemenation {
+
+	if s.authImplemenation == nil {
+		s.authImplemenation = authAPI.NewImplementation()
+	}
+	return s.authImplemenation
 }
 
 func newSyncProducer(brokerList []string, retryMax int) (sarama.SyncProducer, error) {
