@@ -38,6 +38,7 @@ type serviceProvider struct {
 	httpConfig          config.HTTPConfig
 	swaggerConfig       config.SwaggerConfig
 	redisConfig         config.RedisConfig
+	authConfig          config.AuthConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
@@ -195,6 +196,19 @@ func (s *serviceProvider) KafkaConsumerConfig() config.KafkaConsumerConfig {
 	return s.kafkaConsumerConfig
 }
 
+func (s *serviceProvider) AuthConfig() config.AuthConfig {
+	if s.authConfig == nil {
+		cfg, err := config.NewAuthConfig()
+		if err != nil {
+			log.Fatalf("failed to get auth config: %s", err.Error())
+		}
+
+		s.authConfig = cfg
+	}
+
+	return s.authConfig
+}
+
 func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.ConsumerService {
 	if s.userSaverConsumer == nil {
 		s.userSaverConsumer = userSaverConsumer.NewService(
@@ -316,7 +330,7 @@ func (s *serviceProvider) PasswordVerificator() service.PasswordVerificator {
 
 func (s *serviceProvider) AuthenticationService(ctx context.Context) service.AuthenticationService {
 	if s.authenticationService == nil {
-		s.authenticationService = authentication.New(s.UserTokenService(), s.UserRepository(ctx), s.PasswordVerificator())
+		s.authenticationService = authentication.New(s.UserTokenService(), s.UserRepository(ctx), s.PasswordVerificator(), s.AuthConfig())
 	}
 
 	return s.authenticationService

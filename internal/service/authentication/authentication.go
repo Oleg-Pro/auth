@@ -3,15 +3,15 @@ package authentication
 import (
 	"context"
 	"log"
-	"time"
 
+	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/model"
 	"github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/Oleg-Pro/auth/internal/service"
 )
 
 // Use config
-const (
+/*const (
 	//	authPrefix = "Bearer "
 
 	refreshTokenSecretKey = "W4/X+LLjehdxptt4YgGFCvMpq5ewptpZZYRHY6A72g0="
@@ -19,12 +19,13 @@ const (
 
 	refreshTokenExpiration = 60 * time.Minute
 	accessTokenExpiration  = 5 * time.Minute
-)
+)*/
 
 type srv struct {
 	userTokenService    service.UserTokenService
 	userRepository      repository.UserRepository
 	passwordVerificator service.PasswordVerificator
+	authConfig          config.AuthConfig
 }
 
 func (s *srv) Login(ctx context.Context, info model.LoginParams) (refereshToken string, err error) {
@@ -32,8 +33,6 @@ func (s *srv) Login(ctx context.Context, info model.LoginParams) (refereshToken 
 	if err != nil {
 		return "", model.ErrorFailToGenerateToken
 	}
-
-	log.Printf("User Info By Email %#v", userInfo)
 
 	if !s.passwordVerificator.VerifyPassword(userInfo.Info.PaswordHash, info.Password) {
 		log.Printf("Password does not correspond to hash")
@@ -44,8 +43,8 @@ func (s *srv) Login(ctx context.Context, info model.LoginParams) (refereshToken 
 		Username: userInfo.Info.Email,
 		Role:     string(userInfo.Info.Role),
 	},
-		[]byte(refreshTokenSecretKey),
-		refreshTokenExpiration,
+		[]byte(s.authConfig.RefreshTokenSecretKey()),
+		s.authConfig.RefreshTokenExpiration(),
 	)
 	if err != nil {
 		return "", model.ErrorFailToGenerateToken
@@ -59,6 +58,12 @@ func New(
 	userTokenService service.UserTokenService,
 	userRepository repository.UserRepository,
 	passwordVerificator service.PasswordVerificator,
+	authConfig config.AuthConfig,
 ) *srv {
-	return &srv{userTokenService: userTokenService, userRepository: userRepository, passwordVerificator: passwordVerificator}
+	return &srv{
+		userTokenService:    userTokenService,
+		userRepository:      userRepository,
+		passwordVerificator: passwordVerificator,
+		authConfig:          authConfig,
+	}
 }
