@@ -7,3 +7,6 @@ var ErrorNoteNotFound = errors.New("user not found")
 
 // ErrorFailToGenerateToken failed to generator token error
 var ErrorFailToGenerateToken = errors.New("failed to generate token")
+
+// ErrorInvalidRefereshToken invalid refresh token error
+var ErrorInvalidRefereshToken = errors.New("invalid refresh token")

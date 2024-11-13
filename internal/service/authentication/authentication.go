@@ -35,7 +35,6 @@ func (s *srv) Login(ctx context.Context, info model.LoginParams) (refereshToken 
 	}
 
 	if !s.passwordVerificator.VerifyPassword(userInfo.Info.PaswordHash, info.Password) {
-		log.Printf("Password does not correspond to hash")
 		return "", model.ErrorFailToGenerateToken
 	}
 
@@ -51,6 +50,52 @@ func (s *srv) Login(ctx context.Context, info model.LoginParams) (refereshToken 
 	}
 
 	return refreshToken, nil
+}
+
+func (s *srv) GetRefreshToken(_ context.Context, oldRefreshToken string) (string, error) {
+	claims, err := s.userTokenService.VerifyToken(oldRefreshToken, []byte(s.authConfig.RefreshTokenSecretKey()))
+	if err != nil {
+		return "", model.ErrorInvalidRefereshToken
+	}
+
+	log.Printf("GetRefreshToken Clain: %#v\n", claims)
+
+	refreshToken, err := s.userTokenService.GenerateToken(&model.UserTokenParams{
+		Username: claims.Username,
+		Role:     string(claims.Role),
+	},
+		[]byte(s.authConfig.RefreshTokenSecretKey()),
+		s.authConfig.RefreshTokenExpiration(),
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return refreshToken, nil
+}
+
+func (s *srv) GetAccessToken(_ context.Context, refreshToken string) (string, error) {
+	claims, err := s.userTokenService.VerifyToken(refreshToken, []byte(s.authConfig.RefreshTokenSecretKey()))
+	if err != nil {
+		return "", model.ErrorInvalidRefereshToken
+	}
+
+	log.Printf("GetRefreshToken Clain: %#v\n", claims)
+
+	accessToken, err := s.userTokenService.GenerateToken(&model.UserTokenParams{
+		Username: claims.Username,
+		Role:     string(claims.Role),
+	},
+		[]byte(s.authConfig.AccessTokenSecretKey()),
+		s.authConfig.AccessTokenExpiration(),
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return accessToken, nil
 }
 
 // New AuthenticationService constructor

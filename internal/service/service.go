@@ -24,6 +24,8 @@ type UserTokenService interface {
 // AuthenticationService interface for AuthenticationService
 type AuthenticationService interface {
 	Login(ctx context.Context, info model.LoginParams) (refereshToken string, err error)
+	GetRefreshToken(ctx context.Context, refreshToken string) (string, error)
+	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
 }
 
 // PasswordVerificator interface for PasswordVerificator

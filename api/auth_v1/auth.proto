@@ -20,7 +20,7 @@ message LoginResponse {
 }
 
 message GetRefreshTokenRequest {
-  string refresh_token = 1;
+  string old_refresh_token = 1;
 }
 
 message GetRefreshTokenResponse {
