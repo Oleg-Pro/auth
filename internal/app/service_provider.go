@@ -21,6 +21,7 @@ import (
 	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
 	"github.com/Oleg-Pro/auth/internal/service/authentication"
+	"github.com/Oleg-Pro/auth/internal/service/password_verificator"	
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/Oleg-Pro/platform-common/pkg/db"
 	"github.com/Oleg-Pro/platform-common/pkg/db/pg"
@@ -60,6 +61,7 @@ type serviceProvider struct {
 	authImplemenation   *authAPI.Implemenation
 
 	userTokenService  service.UserTokenService
+	passwordVerificator service.PasswordVerificator
 	authenticationService service.AuthenticationService
 
 }
@@ -305,9 +307,17 @@ func (s * serviceProvider) UserTokenService() service.UserTokenService {
 	return s.userTokenService
 }
 
-func (s * serviceProvider) AuthenticationService() service.AuthenticationService {
+func (s * serviceProvider) PasswordVerificator() service.PasswordVerificator {
+	if s.passwordVerificator == nil {
+		s.passwordVerificator = password_verificator.New()
+	}
+
+	return s.passwordVerificator
+}
+
+func (s * serviceProvider) AuthenticationService(ctx context.Context) service.AuthenticationService {
 	if s.authenticationService == nil {
-		s.authenticationService = authentication.New(s.UserTokenService())
+		s.authenticationService = authentication.New(s.UserTokenService(), s.UserRepository(ctx), s.PasswordVerificator())
 	}
 
 	return s.authenticationService
@@ -317,7 +327,7 @@ func (s * serviceProvider) AuthenticationService() service.AuthenticationService
 func (s *serviceProvider) AuthImplementation(ctx context.Context) *authAPI.Implemenation {
 
 	if s.authImplemenation == nil {
-		s.authImplemenation = authAPI.NewImplementation(s.AuthenticationService())
+		s.authImplemenation = authAPI.NewImplementation(s.AuthenticationService(ctx))
 	}
 	return s.authImplemenation
 }

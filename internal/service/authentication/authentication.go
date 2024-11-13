@@ -1,9 +1,12 @@
 package authentication
 
 import (
+	"context"
 	"time"
-	"github.com/pkg/errors"		
+	"log"
+
 	"github.com/Oleg-Pro/auth/internal/model"
+	"github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/Oleg-Pro/auth/internal/service"
 )
 
@@ -20,32 +23,42 @@ const (
 
 type srv struct {
 	userTokenService service.UserTokenService
+	userRepository repository.UserRepository
+	passwordVerificator service.PasswordVerificator
 }
 
-func (s *srv)Login(info model.LoginParams) (refereshToken string, err error) {
+func (s *srv)Login(ctx context.Context, info model.LoginParams) (refereshToken string, err error) {
+	userInfo, err := s.userRepository.GetByEmail(ctx, info.Email)
+	if err != nil {
+		return "", model.ErrorFailToGenerateToken
+	}	
 
-// Лезем в базу или кэш за данными пользователя
-// user = getByEmail(info.Email)
+	log.Printf("User Info By Email %#v", userInfo)
 
-
-// Сверяем хэши пароля
-
+	if !s.passwordVerificator.VerifyPassword(userInfo.Info.PaswordHash, info.Password) {
+		log.Printf("Password does not correspond to hash")
+		return "", model.ErrorFailToGenerateToken
+	}
 
 refreshToken, err := s.userTokenService.GenerateToken(&model.UserTokenParams{
-	Username: info.Email,
-	Role: "admin",
+	Username: userInfo.Info.Email,
+	Role: string(userInfo.Info.Role),
 },
 	[]byte(refreshTokenSecretKey),
 	refreshTokenExpiration,
 )
 if err != nil {
-	return "", errors.New("failed to generate token")
+	return "", model.ErrorFailToGenerateToken
 }
 
 return refreshToken, nil		
 }
 
-func New(userTokenService service.UserTokenService) *srv {
-	return &srv{userTokenService: userTokenService}
+func New(
+	userTokenService service.UserTokenService,
+	 userRepository repository.UserRepository,
+	  passwordVerificator service.PasswordVerificator,
+	  ) *srv {
+	return &srv{userTokenService: userTokenService, userRepository: userRepository, passwordVerificator: passwordVerificator}
 }
 

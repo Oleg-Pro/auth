@@ -10,7 +10,7 @@ import (
 
 func (i *Implemenation) Login(ctx context.Context, req *desc.LoginRequest) (*desc.LoginResponse, error) {
 
-	refreshToken, err := i.authenticationService.Login(model.LoginParams{Email: req.GetUsername(), Password: req.GetPassword()})
+	refreshToken, err := i.authenticationService.Login(ctx, model.LoginParams{Email: req.GetUsername(), Password: req.GetPassword()})
 	if err != nil {
 		return nil, errors.New("failed to generate token")
 	}

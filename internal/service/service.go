@@ -21,9 +21,12 @@ type UserTokenService interface {
 }
 
 type AuthenticationService interface {
-	Login(info model.LoginParams) (refereshToken string, err error)
+	Login(ctx context.Context, info model.LoginParams) (refereshToken string, err error)
 }
 
+type PasswordVerificator interface {
+	VerifyPassword(hashedPassword string, candidatePassword string) bool
+}
 
 // ConsumerService interface
 type ConsumerService interface {

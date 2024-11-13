@@ -66,7 +66,7 @@ func (r *repo) Create(ctx context.Context, info *model.UserInfo) (int64, error) 
 }
 
 func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
-	builderSelectOne := sq.Select(userColumnID, userColumnName, userColumnEmail, userColumnRoleID, userColumnCreatedAt, userColumnUpdateAt).
+	builderSelectOne := sq.Select(userColumnID, userColumnName, userColumnEmail, userColumnRoleID, userColumnPasswordHash, userColumnCreatedAt, userColumnUpdateAt).
 		From(userTable).
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): id}).
@@ -85,12 +85,43 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 		QueryRaw: query,
 	}
 
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.Info.PaswordHash, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		log.Printf("Failed to get user: %v", err)
 		return nil, err
 	}
 
+
+
+	return converter.ToUserFromRepo(&user), nil
+}
+
+func (r * repo) GetByEmail(ctx context.Context, email string) (*model.User, error)	{
+	builderSelectOne := sq.Select(userColumnID, userColumnName, userColumnEmail, userColumnRoleID, userColumnPasswordHash, userColumnCreatedAt, userColumnUpdateAt).
+	From(userTable).
+	PlaceholderFormat(sq.Dollar).
+	Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnEmail): email}).
+	Limit(1)
+	
+	query, args, err := builderSelectOne.ToSql()
+	if err != nil {
+		log.Printf("Failed to build get query: %v", err)
+		return nil, err
+	}
+
+	var user modelRepo.User
+
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.Info.PaswordHash, &user.CreatedAt, &user.UpdatedAt)
+	if err != nil {
+		log.Printf("Failed to get user: %v", err)
+		return nil, err
+	}
+	
 	return converter.ToUserFromRepo(&user), nil
 }
 
