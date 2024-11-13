@@ -2,9 +2,10 @@ package token
 
 import (
 	"time"
-	"github.com/pkg/errors"
-	"github.com/dgrijalva/jwt-go"	
+
 	"github.com/Oleg-Pro/auth/internal/model"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/pkg/errors"
 )
 
 type serv struct {
@@ -22,7 +23,7 @@ func (s *serv) GenerateToken(info *model.UserTokenParams, secretKey []byte, dura
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(secretKey)	
+	return token.SignedString(secretKey)
 }
 
 func (s *serv) VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims, error) {
@@ -50,7 +51,7 @@ func (s *serv) VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims
 	return claims, nil
 }
 
-
+// New constructor for UserTokenService
 func New() *serv {
 	return &serv{}
 }

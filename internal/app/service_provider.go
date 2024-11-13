@@ -5,9 +5,8 @@ import (
 	"log"
 
 	"github.com/IBM/sarama"
-	authAPI "github.com/Oleg-Pro/auth/internal/api/auth"		
+	authAPI "github.com/Oleg-Pro/auth/internal/api/auth"
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
-	userToken "github.com/Oleg-Pro/auth/internal/service/user/token"	
 	"github.com/Oleg-Pro/auth/internal/client/cache"
 	"github.com/Oleg-Pro/auth/internal/client/cache/redis"
 	"github.com/Oleg-Pro/auth/internal/client/kafka"
@@ -17,11 +16,12 @@ import (
 	userRepository "github.com/Oleg-Pro/auth/internal/repository/user"
 	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"
 	"github.com/Oleg-Pro/auth/internal/service"
+	"github.com/Oleg-Pro/auth/internal/service/authentication"
 	userSaverConsumer "github.com/Oleg-Pro/auth/internal/service/consumer/user_saver"
+	"github.com/Oleg-Pro/auth/internal/service/password_verificator"
 	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
-	"github.com/Oleg-Pro/auth/internal/service/authentication"
-	"github.com/Oleg-Pro/auth/internal/service/password_verificator"	
+	userToken "github.com/Oleg-Pro/auth/internal/service/user/token"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/Oleg-Pro/platform-common/pkg/db"
 	"github.com/Oleg-Pro/platform-common/pkg/db/pg"
@@ -60,10 +60,9 @@ type serviceProvider struct {
 	userImplemenation   *userAPI.Implementation
 	authImplemenation   *authAPI.Implemenation
 
-	userTokenService  service.UserTokenService
-	passwordVerificator service.PasswordVerificator
+	userTokenService      service.UserTokenService
+	passwordVerificator   service.PasswordVerificator
 	authenticationService service.AuthenticationService
-
 }
 
 func newServiceProvider() *serviceProvider {
@@ -299,7 +298,7 @@ func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Imple
 	return s.userImplemenation
 }
 
-func (s * serviceProvider) UserTokenService() service.UserTokenService {
+func (s *serviceProvider) UserTokenService() service.UserTokenService {
 	if s.userTokenService == nil {
 		s.userTokenService = userToken.New()
 	}
@@ -307,7 +306,7 @@ func (s * serviceProvider) UserTokenService() service.UserTokenService {
 	return s.userTokenService
 }
 
-func (s * serviceProvider) PasswordVerificator() service.PasswordVerificator {
+func (s *serviceProvider) PasswordVerificator() service.PasswordVerificator {
 	if s.passwordVerificator == nil {
 		s.passwordVerificator = password_verificator.New()
 	}
@@ -315,14 +314,13 @@ func (s * serviceProvider) PasswordVerificator() service.PasswordVerificator {
 	return s.passwordVerificator
 }
 
-func (s * serviceProvider) AuthenticationService(ctx context.Context) service.AuthenticationService {
+func (s *serviceProvider) AuthenticationService(ctx context.Context) service.AuthenticationService {
 	if s.authenticationService == nil {
 		s.authenticationService = authentication.New(s.UserTokenService(), s.UserRepository(ctx), s.PasswordVerificator())
 	}
 
 	return s.authenticationService
 }
-
 
 func (s *serviceProvider) AuthImplementation(ctx context.Context) *authAPI.Implemenation {
 

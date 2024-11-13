@@ -12,18 +12,21 @@ type UserService interface {
 	Create(ctx context.Context, info *model.UserInfo) (int64, error)
 	Update(ctx context.Context, id int64, info *model.UserUpdateInfo) (int64, error)
 	Get(ctx context.Context, id int64) (*model.User, error)
-	Delete(ctx context.Context, id int64) (int64, error)	
+	Delete(ctx context.Context, id int64) (int64, error)
 }
 
+// UserTokenService interface for UserTokenService
 type UserTokenService interface {
 	GenerateToken(info *model.UserTokenParams, secretKey []byte, duration time.Duration) (string, error)
-	VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims, error) 	
+	VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims, error)
 }
 
+// AuthenticationService interface for AuthenticationService
 type AuthenticationService interface {
 	Login(ctx context.Context, info model.LoginParams) (refereshToken string, err error)
 }
 
+// PasswordVerificator interface for PasswordVerificator
 type PasswordVerificator interface {
 	VerifyPassword(hashedPassword string, candidatePassword string) bool
 }

@@ -91,18 +91,16 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 		return nil, err
 	}
 
-
-
 	return converter.ToUserFromRepo(&user), nil
 }
 
-func (r * repo) GetByEmail(ctx context.Context, email string) (*model.User, error)	{
+func (r *repo) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	builderSelectOne := sq.Select(userColumnID, userColumnName, userColumnEmail, userColumnRoleID, userColumnPasswordHash, userColumnCreatedAt, userColumnUpdateAt).
-	From(userTable).
-	PlaceholderFormat(sq.Dollar).
-	Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnEmail): email}).
-	Limit(1)
-	
+		From(userTable).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnEmail): email}).
+		Limit(1)
+
 	query, args, err := builderSelectOne.ToSql()
 	if err != nil {
 		log.Printf("Failed to build get query: %v", err)
@@ -121,7 +119,7 @@ func (r * repo) GetByEmail(ctx context.Context, email string) (*model.User, erro
 		log.Printf("Failed to get user: %v", err)
 		return nil, err
 	}
-	
+
 	return converter.ToUserFromRepo(&user), nil
 }
 

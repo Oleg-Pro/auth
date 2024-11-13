@@ -15,8 +15,8 @@ import (
 
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/interceptor"
+	authDesc "github.com/Oleg-Pro/auth/pkg/auth_v1"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
-	authDesc "github.com/Oleg-Pro/auth/pkg/auth_v1"	
 
 	// To make statik virtual system work
 	_ "github.com/Oleg-Pro/auth/statik"
