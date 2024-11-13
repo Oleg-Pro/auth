@@ -46,3 +46,8 @@ type  UserTokenParams struct {
 	Username string `json:"username"`
 	Role     string `json:"role"`
 }
+
+type LoginParams struct {
+	Email string
+	Password string
+}

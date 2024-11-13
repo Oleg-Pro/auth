@@ -7,6 +7,7 @@ import (
 	"github.com/IBM/sarama"
 	authAPI "github.com/Oleg-Pro/auth/internal/api/auth"		
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
+	userToken "github.com/Oleg-Pro/auth/internal/service/user/token"	
 	"github.com/Oleg-Pro/auth/internal/client/cache"
 	"github.com/Oleg-Pro/auth/internal/client/cache/redis"
 	"github.com/Oleg-Pro/auth/internal/client/kafka"
@@ -19,6 +20,7 @@ import (
 	userSaverConsumer "github.com/Oleg-Pro/auth/internal/service/consumer/user_saver"
 	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
+	"github.com/Oleg-Pro/auth/internal/service/authentication"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/Oleg-Pro/platform-common/pkg/db"
 	"github.com/Oleg-Pro/platform-common/pkg/db/pg"
@@ -56,6 +58,10 @@ type serviceProvider struct {
 	userService         service.UserService
 	userImplemenation   *userAPI.Implementation
 	authImplemenation   *authAPI.Implemenation
+
+	userTokenService  service.UserTokenService
+	authenticationService service.AuthenticationService
+
 }
 
 func newServiceProvider() *serviceProvider {
@@ -291,10 +297,27 @@ func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Imple
 	return s.userImplemenation
 }
 
+func (s * serviceProvider) UserTokenService() service.UserTokenService {
+	if s.userTokenService == nil {
+		s.userTokenService = userToken.New()
+	}
+
+	return s.userTokenService
+}
+
+func (s * serviceProvider) AuthenticationService() service.AuthenticationService {
+	if s.authenticationService == nil {
+		s.authenticationService = authentication.New(s.UserTokenService())
+	}
+
+	return s.authenticationService
+}
+
+
 func (s *serviceProvider) AuthImplementation(ctx context.Context) *authAPI.Implemenation {
 
 	if s.authImplemenation == nil {
-		s.authImplemenation = authAPI.NewImplementation()
+		s.authImplemenation = authAPI.NewImplementation(s.AuthenticationService())
 	}
 	return s.authImplemenation
 }

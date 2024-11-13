@@ -2,13 +2,20 @@ package auth
 
 import (
 	"context"
-	desc "github.com/Oleg-Pro/auth/pkg/auth_v1"		
+	"github.com/pkg/errors"	
+
+	"github.com/Oleg-Pro/auth/internal/model"
+	desc "github.com/Oleg-Pro/auth/pkg/auth_v1"
 )
 
 func (i *Implemenation) Login(ctx context.Context, req *desc.LoginRequest) (*desc.LoginResponse, error) {
 
-	return &desc.LoginResponse{}, nil
-}
+	refreshToken, err := i.authenticationService.Login(model.LoginParams{Email: req.GetUsername(), Password: req.GetPassword()})
+	if err != nil {
+		return nil, errors.New("failed to generate token")
+	}
+
+	return &desc.LoginResponse{RefreshToken: refreshToken}, nil	}
 
 /*GetRefreshToken(context.Context, *GetRefreshTokenRequest) (*GetRefreshTokenResponse, error)
 GetAccessToken(context.Context, *GetAccessTokenRequest) (*GetAccessTokenResponse, error)*/
