@@ -28,6 +28,11 @@ type AuthenticationService interface {
 	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
 }
 
+// AccessService interface
+type AccessService interface {
+	Allow(ctx context.Context, endpointAddress string, accessToken string) bool
+}
+
 // PasswordVerificator interface for PasswordVerificator
 type PasswordVerificator interface {
 	VerifyPassword(hashedPassword string, candidatePassword string) bool

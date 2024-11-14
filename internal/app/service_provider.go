@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/IBM/sarama"
+	accessAPI "github.com/Oleg-Pro/auth/internal/api/access"
 	authAPI "github.com/Oleg-Pro/auth/internal/api/auth"
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
 	"github.com/Oleg-Pro/auth/internal/client/cache"
@@ -16,6 +17,7 @@ import (
 	userRepository "github.com/Oleg-Pro/auth/internal/repository/user"
 	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"
 	"github.com/Oleg-Pro/auth/internal/service"
+	"github.com/Oleg-Pro/auth/internal/service/access"
 	"github.com/Oleg-Pro/auth/internal/service/authentication"
 	userSaverConsumer "github.com/Oleg-Pro/auth/internal/service/consumer/user_saver"
 	"github.com/Oleg-Pro/auth/internal/service/password_verificator"
@@ -58,12 +60,16 @@ type serviceProvider struct {
 
 	userCacheRepository repository.UserCacheRepository
 	userService         service.UserService
+
 	userImplemenation   *userAPI.Implementation
 	authImplemenation   *authAPI.Implemenation
+	accessImplemenation *accessAPI.Implemenation
 
 	userTokenService      service.UserTokenService
 	passwordVerificator   service.PasswordVerificator
 	authenticationService service.AuthenticationService
+
+	accessService service.AccessService
 }
 
 func newServiceProvider() *serviceProvider {
@@ -336,12 +342,28 @@ func (s *serviceProvider) AuthenticationService(ctx context.Context) service.Aut
 	return s.authenticationService
 }
 
+func (s *serviceProvider) AccessService(_ context.Context) service.AccessService {
+	if s.accessService == nil {
+		s.accessService = access.New()
+	}
+
+	return s.accessService
+}
+
 func (s *serviceProvider) AuthImplementation(ctx context.Context) *authAPI.Implemenation {
 
 	if s.authImplemenation == nil {
 		s.authImplemenation = authAPI.NewImplementation(s.AuthenticationService(ctx))
 	}
 	return s.authImplemenation
+}
+
+func (s *serviceProvider) AccessImplementation(ctx context.Context) *accessAPI.Implemenation {
+
+	if s.accessImplemenation == nil {
+		s.accessImplemenation = accessAPI.NewImplementation(s.AccessService(ctx))
+	}
+	return s.accessImplemenation
 }
 
 func newSyncProducer(brokerList []string, retryMax int) (sarama.SyncProducer, error) {

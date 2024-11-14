@@ -15,6 +15,7 @@ import (
 
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/interceptor"
+	accessDesc "github.com/Oleg-Pro/auth/pkg/access_v1"
 	authDesc "github.com/Oleg-Pro/auth/pkg/auth_v1"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
 
@@ -137,6 +138,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	reflection.Register(a.grpcServer)
 	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImplementation(ctx))
 	authDesc.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthImplementation(ctx))
+	accessDesc.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessImplementation(ctx))
 
 	return nil
 }

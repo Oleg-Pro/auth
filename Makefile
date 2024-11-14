@@ -31,6 +31,7 @@ generate:
 	$(LOCAL_BIN)/statik -src=pkg/swagger/ -include='*.css,*.html,*.js,*.json,*.png'	
 	make generate_user_api
 	make generate-auth-api
+	generate-access-api	
 
 generate_user_api:
 	mkdir -p pkg/user_v1
