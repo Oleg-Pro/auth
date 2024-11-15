@@ -58,7 +58,8 @@ func (s *srv) GetRefreshToken(_ context.Context, oldRefreshToken string) (string
 		return "", model.ErrorInvalidRefereshToken
 	}
 
-	log.Printf("GetRefreshToken Clain: %#v\n", claims)
+	log.Printf("GetRefreshToken Claim: %#v\n", claims)
+
 
 	refreshToken, err := s.userTokenService.GenerateToken(&model.UserTokenParams{
 		Username: claims.Username,
@@ -81,7 +82,9 @@ func (s *srv) GetAccessToken(_ context.Context, refreshToken string) (string, er
 		return "", model.ErrorInvalidRefereshToken
 	}
 
-	log.Printf("GetRefreshToken Clain: %#v\n", claims)
+	log.Printf("GetAccess eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzE2NjQyMjEsInVzZXJuYW1lIjoib3BwMjAwNzE5ODBAZ21haWwuY29tIiwicm9sZSI6Ilx1MDAwMiJ9.u1T979AtCIKn0hlAb_dUw6TY0PyYoDXXknGF0Ujo52g: %#v\n", claims)
+
+	log.Printf("GetAccessToken AccessTokenSecretKey %s", s.authConfig.AccessTokenSecretKey())	
 
 	accessToken, err := s.userTokenService.GenerateToken(&model.UserTokenParams{
 		Username: claims.Username,

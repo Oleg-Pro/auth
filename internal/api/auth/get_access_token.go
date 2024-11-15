@@ -10,7 +10,7 @@ import (
 
 // GetAccessToken get access token
 func (i *Implemenation) GetAccessToken(ctx context.Context, req *desc.GetAccessTokenRequest) (*desc.GetAccessTokenResponse, error) {
-	accessToken, err := i.authenticationService.GetRefreshToken(ctx, req.GetRefreshToken())
+	accessToken, err := i.authenticationService.GetAccessToken(ctx, req.GetRefreshToken())
 	if err != nil {
 		return nil, status.Errorf(codes.Aborted, "invalid refresh token")
 	}

@@ -23,11 +23,12 @@ func (s *srv) Allow(ctx context.Context, endpointAddress string, accessToken str
 	accessTokenKeySecret := s.authConfig.AccessTokenSecretKey()
 	log.Printf("accessTokenKeySecret %s\n", accessTokenKeySecret)
 
-	claims, err := s.userTokenService.VerifyToken(accessToken, []byte(s.authConfig.AccessTokenSecretKey()))
+	log.Printf("Allow Access Token: %s\n", accessToken)
+
+	claims, err := s.userTokenService.VerifyToken(accessToken, []byte(s.authConfig.AccessTokenSecretKey()))	
 	if err != nil {
 		log.Printf("Verify token error: %s\n", err.Error())
 		return false
-		//return nil, errors.New("access token is invalid")
 	}
 
 	accessibleMap, err := s.accessibleRolesMap(ctx)
@@ -37,10 +38,12 @@ func (s *srv) Allow(ctx context.Context, endpointAddress string, accessToken str
 
 	role, ok := accessibleMap[endpointAddress]
 	if !ok {
+		log.Println("No in map - verified!")
 		return true
 	}
 
 	if role == claims.Role {
+		log.Println("Correct role - verifed!")		
 		return true
 	}
 
