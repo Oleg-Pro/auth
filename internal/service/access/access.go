@@ -25,7 +25,7 @@ func (s *srv) Allow(ctx context.Context, endpointAddress string, accessToken str
 
 	log.Printf("Allow Access Token: %s\n", accessToken)
 
-	claims, err := s.userTokenService.VerifyToken(accessToken, []byte(s.authConfig.AccessTokenSecretKey()))	
+	claims, err := s.userTokenService.VerifyToken(accessToken, []byte(s.authConfig.AccessTokenSecretKey()))
 	if err != nil {
 		log.Printf("Verify token error: %s\n", err.Error())
 		return false
@@ -43,7 +43,7 @@ func (s *srv) Allow(ctx context.Context, endpointAddress string, accessToken str
 	}
 
 	if role == claims.Role {
-		log.Println("Correct role - verifed!")		
+		log.Println("Correct role - verifed!")
 		return true
 	}
 
