@@ -3,13 +3,14 @@ package access
 import (
 	"context"
 	"log"
+	"slices"
 
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/model"
 	"github.com/Oleg-Pro/auth/internal/service"
 )
 
-var accessibleRoles map[string]string
+var accessibleRoles map[string][]string
 
 type srv struct {
 	userTokenService service.UserTokenService
@@ -31,30 +32,37 @@ func (s *srv) Allow(ctx context.Context, endpointAddress string, accessToken str
 		return false
 	}
 
+	// Admin has access eveywhere
+	if claims.Role == string(model.RoleADMIN) {
+		log.Println("ADMIN role - verified!")		
+		return true
+	}
+
+
 	accessibleMap, err := s.accessibleRolesMap(ctx)
 	if err != nil {
 		return false
 	}
 
-	role, ok := accessibleMap[endpointAddress]
+	roles, ok := accessibleMap[endpointAddress]
 	if !ok {
 		log.Println("No in map - verified!")
-		return true
+		return false
 	}
 
-	if role == claims.Role {
-		log.Println("Correct role - verifed!")
+	if slices.Contains(roles, claims.Role) {
+		log.Println("Role has access to endpoint!")
 		return true
 	}
 
 	return false
 }
 
-func (s *srv) accessibleRolesMap(_ context.Context) (map[string]string, error) {
+func (s *srv) accessibleRolesMap(_ context.Context) (map[string][]string, error) {
 	if accessibleRoles == nil {
-		accessibleRoles = make(map[string]string)
+		accessibleRoles = make(map[string][]string)
 
-		accessibleRoles["/user_v1.UserV1/Get"] = string(model.RoleADMIN)
+		accessibleRoles["chat_v1.ChatV1/SendMessage"] = []string {string(model.RoleUSER), }
 	}
 
 	return accessibleRoles, nil
