@@ -2,6 +2,7 @@ package access
 
 import (
 	"context"
+	"log"
 
 	"github.com/Oleg-Pro/auth/internal/config"
 	"github.com/Oleg-Pro/auth/internal/model"
@@ -17,9 +18,15 @@ type srv struct {
 
 func (s *srv) Allow(ctx context.Context, endpointAddress string, accessToken string) bool {
 
+	authConfig := s.authConfig
+	log.Printf("authConfig %#v\n", authConfig)
+	accessTokenKeySecret := s.authConfig.AccessTokenSecretKey()
+	log.Printf("accessTokenKeySecret %s\n", accessTokenKeySecret)
+
 	claims, err := s.userTokenService.VerifyToken(accessToken, []byte(s.authConfig.AccessTokenSecretKey()))
 	if err != nil {
-		return true
+		log.Printf("Verify token error: %s\n", err.Error())
+		return false
 		//return nil, errors.New("access token is invalid")
 	}
 
@@ -51,6 +58,8 @@ func (s *srv) accessibleRolesMap(_ context.Context) (map[string]string, error) {
 }
 
 // New AuthenticationService constructor
-func New() *srv {
-	return &srv{}
+func New(userTokenService service.UserTokenService,
+	authConfig config.AuthConfig,
+) *srv {
+	return &srv{userTokenService: userTokenService, authConfig: authConfig}
 }

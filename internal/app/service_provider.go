@@ -344,7 +344,7 @@ func (s *serviceProvider) AuthenticationService(ctx context.Context) service.Aut
 
 func (s *serviceProvider) AccessService(_ context.Context) service.AccessService {
 	if s.accessService == nil {
-		s.accessService = access.New()
+		s.accessService = access.New(s.UserTokenService(), s.AuthConfig())
 	}
 
 	return s.accessService

@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"time"
 
 	"github.com/Oleg-Pro/auth/internal/model"
@@ -27,6 +28,7 @@ func (s *serv) GenerateToken(info *model.UserTokenParams, secretKey []byte, dura
 }
 
 func (s *serv) VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims, error) {
+	log.Printf("Token: %v\n", tokenStr)
 	token, err := jwt.ParseWithClaims(
 		tokenStr,
 		&model.UserClaims{},
@@ -39,6 +41,7 @@ func (s *serv) VerifyToken(tokenStr string, secretKey []byte) (*model.UserClaims
 			return secretKey, nil
 		},
 	)
+
 	if err != nil {
 		return nil, errors.Errorf("invalid token: %s", err.Error())
 	}

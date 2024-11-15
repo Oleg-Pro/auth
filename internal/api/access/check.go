@@ -2,6 +2,7 @@ package access
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/Oleg-Pro/auth/internal/model"
@@ -34,6 +35,8 @@ func getAccessToken(ctx context.Context) (string, error) {
 	if !ok {
 		return "", model.ErrorMetadataNotProvided
 	}
+
+	log.Printf("Access MD: %#v", md)
 
 	authHeader, ok := md["authorization"]
 	if !ok || len(authHeader) == 0 {
