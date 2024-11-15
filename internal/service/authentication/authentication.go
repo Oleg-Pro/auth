@@ -10,17 +10,6 @@ import (
 	"github.com/Oleg-Pro/auth/internal/service"
 )
 
-// Use config
-/*const (
-	//	authPrefix = "Bearer "
-
-	refreshTokenSecretKey = "W4/X+LLjehdxptt4YgGFCvMpq5ewptpZZYRHY6A72g0="
-	accessTokenSecretKey  = "VqvguGiffXILza1f44TWXowDT4zwf03dtXmqWW4SYyE="
-
-	refreshTokenExpiration = 60 * time.Minute
-	accessTokenExpiration  = 5 * time.Minute
-)*/
-
 type srv struct {
 	userTokenService    service.UserTokenService
 	userRepository      repository.UserRepository
