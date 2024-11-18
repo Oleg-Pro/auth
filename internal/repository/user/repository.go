@@ -80,8 +80,6 @@ func (r *repo) Get(ctx context.Context, filter repository.UserFilter) (*model.Us
 	}
 
 	query, args, err := builderSelectOne.ToSql()
-	log.Println("Get sql Log")
-	log.Printf("Get sql : %s\n", query)
 	if err != nil {
 		log.Printf("Failed to build get query: %v", err)
 		return nil, err
