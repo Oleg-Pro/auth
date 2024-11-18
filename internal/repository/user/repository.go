@@ -71,59 +71,17 @@ func (r *repo) Get(ctx context.Context, filter repository.UserFilter) (*model.Us
 		PlaceholderFormat(sq.Dollar).
 		Limit(1)
 
-	if (filter.ID != nil) {
-		builderSelectOne = builderSelectOne.Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): filter.ID})		
-	}	 
-
-	if (filter.Email != nil) {
-		builderSelectOne = builderSelectOne.Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnEmail): filter.Email})				
-	}	
-
-	query, args, err := builderSelectOne.ToSql()
-	log.Println("Get sql Log")	
-	log.Printf("Get sql : %s\n", query)
-	if err != nil {
-		log.Printf("Failed to build get query: %v", err)
-		return nil, err
-	}
-
-	var user modelRepo.User
-
-	q := db.Query{
-		Name:     "user_repository.Get",
-		QueryRaw: query,
-	}
-
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.Info.PaswordHash, &user.CreatedAt, &user.UpdatedAt)
-	if err != nil {
-		log.Printf("Failed to get user: %v", err)
-		return nil, err
-	}
-
-	return converter.ToUserFromRepo(&user), nil
-}
-
-/*func getUserCondition (filter repository.UserFilter) interface{}{
-	var conditions []interface{}
-
 	if filter.ID != nil {
-		conditions = append(conditions, sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): filter.ID})
+		builderSelectOne = builderSelectOne.Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): filter.ID})
 	}
 
 	if filter.Email != nil {
-		conditions = append(conditions, sq.Eq{fmt.Sprintf(`"%s"`, userColumnEmail): filter.Email})
-	}	
-	return sq.And()
-}*/
-
-func (r *repo) GetByEmail(ctx context.Context, email string) (*model.User, error) {
-	builderSelectOne := sq.Select(userColumnID, userColumnName, userColumnEmail, userColumnRoleID, userColumnPasswordHash, userColumnCreatedAt, userColumnUpdateAt).
-		From(userTable).
-		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnEmail): email}).
-		Limit(1)
+		builderSelectOne = builderSelectOne.Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnEmail): filter.Email})
+	}
 
 	query, args, err := builderSelectOne.ToSql()
+	log.Println("Get sql Log")
+	log.Printf("Get sql : %s\n", query)
 	if err != nil {
 		log.Printf("Failed to build get query: %v", err)
 		return nil, err

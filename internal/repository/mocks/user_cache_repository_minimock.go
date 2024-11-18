@@ -11,6 +11,7 @@ import (
 	mm_time "time"
 
 	"github.com/Oleg-Pro/auth/internal/model"
+	mm_repository "github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/gojuno/minimock/v3"
 )
 
@@ -33,9 +34,9 @@ type UserCacheRepositoryMock struct {
 	beforeDeleteCounter uint64
 	DeleteMock          mUserCacheRepositoryMockDelete
 
-	funcGet          func(ctx context.Context, id int64) (up1 *model.User, err error)
+	funcGet          func(ctx context.Context, filter mm_repository.UserFilter) (up1 *model.User, err error)
 	funcGetOrigin    string
-	inspectFuncGet   func(ctx context.Context, id int64)
+	inspectFuncGet   func(ctx context.Context, filter mm_repository.UserFilter)
 	afterGetCounter  uint64
 	beforeGetCounter uint64
 	GetMock          mUserCacheRepositoryMockGet
@@ -816,14 +817,14 @@ type UserCacheRepositoryMockGetExpectation struct {
 
 // UserCacheRepositoryMockGetParams contains parameters of the UserCacheRepository.Get
 type UserCacheRepositoryMockGetParams struct {
-	ctx context.Context
-	id  int64
+	ctx    context.Context
+	filter mm_repository.UserFilter
 }
 
 // UserCacheRepositoryMockGetParamPtrs contains pointers to parameters of the UserCacheRepository.Get
 type UserCacheRepositoryMockGetParamPtrs struct {
-	ctx *context.Context
-	id  *int64
+	ctx    *context.Context
+	filter *mm_repository.UserFilter
 }
 
 // UserCacheRepositoryMockGetResults contains results of the UserCacheRepository.Get
@@ -834,9 +835,9 @@ type UserCacheRepositoryMockGetResults struct {
 
 // UserCacheRepositoryMockGetOrigins contains origins of expectations of the UserCacheRepository.Get
 type UserCacheRepositoryMockGetExpectationOrigins struct {
-	origin    string
-	originCtx string
-	originId  string
+	origin       string
+	originCtx    string
+	originFilter string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -850,7 +851,7 @@ func (mmGet *mUserCacheRepositoryMockGet) Optional() *mUserCacheRepositoryMockGe
 }
 
 // Expect sets up expected params for UserCacheRepository.Get
-func (mmGet *mUserCacheRepositoryMockGet) Expect(ctx context.Context, id int64) *mUserCacheRepositoryMockGet {
+func (mmGet *mUserCacheRepositoryMockGet) Expect(ctx context.Context, filter mm_repository.UserFilter) *mUserCacheRepositoryMockGet {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Set")
 	}
@@ -863,7 +864,7 @@ func (mmGet *mUserCacheRepositoryMockGet) Expect(ctx context.Context, id int64) 
 		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by ExpectParams functions")
 	}
 
-	mmGet.defaultExpectation.params = &UserCacheRepositoryMockGetParams{ctx, id}
+	mmGet.defaultExpectation.params = &UserCacheRepositoryMockGetParams{ctx, filter}
 	mmGet.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmGet.expectations {
 		if minimock.Equal(e.params, mmGet.defaultExpectation.params) {
@@ -897,8 +898,8 @@ func (mmGet *mUserCacheRepositoryMockGet) ExpectCtxParam1(ctx context.Context) *
 	return mmGet
 }
 
-// ExpectIdParam2 sets up expected param id for UserCacheRepository.Get
-func (mmGet *mUserCacheRepositoryMockGet) ExpectIdParam2(id int64) *mUserCacheRepositoryMockGet {
+// ExpectFilterParam2 sets up expected param filter for UserCacheRepository.Get
+func (mmGet *mUserCacheRepositoryMockGet) ExpectFilterParam2(filter mm_repository.UserFilter) *mUserCacheRepositoryMockGet {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Set")
 	}
@@ -914,14 +915,14 @@ func (mmGet *mUserCacheRepositoryMockGet) ExpectIdParam2(id int64) *mUserCacheRe
 	if mmGet.defaultExpectation.paramPtrs == nil {
 		mmGet.defaultExpectation.paramPtrs = &UserCacheRepositoryMockGetParamPtrs{}
 	}
-	mmGet.defaultExpectation.paramPtrs.id = &id
-	mmGet.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+	mmGet.defaultExpectation.paramPtrs.filter = &filter
+	mmGet.defaultExpectation.expectationOrigins.originFilter = minimock.CallerInfo(1)
 
 	return mmGet
 }
 
 // Inspect accepts an inspector function that has same arguments as the UserCacheRepository.Get
-func (mmGet *mUserCacheRepositoryMockGet) Inspect(f func(ctx context.Context, id int64)) *mUserCacheRepositoryMockGet {
+func (mmGet *mUserCacheRepositoryMockGet) Inspect(f func(ctx context.Context, filter mm_repository.UserFilter)) *mUserCacheRepositoryMockGet {
 	if mmGet.mock.inspectFuncGet != nil {
 		mmGet.mock.t.Fatalf("Inspect function is already set for UserCacheRepositoryMock.Get")
 	}
@@ -946,7 +947,7 @@ func (mmGet *mUserCacheRepositoryMockGet) Return(up1 *model.User, err error) *Us
 }
 
 // Set uses given function f to mock the UserCacheRepository.Get method
-func (mmGet *mUserCacheRepositoryMockGet) Set(f func(ctx context.Context, id int64) (up1 *model.User, err error)) *UserCacheRepositoryMock {
+func (mmGet *mUserCacheRepositoryMockGet) Set(f func(ctx context.Context, filter mm_repository.UserFilter) (up1 *model.User, err error)) *UserCacheRepositoryMock {
 	if mmGet.defaultExpectation != nil {
 		mmGet.mock.t.Fatalf("Default expectation is already set for the UserCacheRepository.Get method")
 	}
@@ -962,14 +963,14 @@ func (mmGet *mUserCacheRepositoryMockGet) Set(f func(ctx context.Context, id int
 
 // When sets expectation for the UserCacheRepository.Get which will trigger the result defined by the following
 // Then helper
-func (mmGet *mUserCacheRepositoryMockGet) When(ctx context.Context, id int64) *UserCacheRepositoryMockGetExpectation {
+func (mmGet *mUserCacheRepositoryMockGet) When(ctx context.Context, filter mm_repository.UserFilter) *UserCacheRepositoryMockGetExpectation {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserCacheRepositoryMock.Get mock is already set by Set")
 	}
 
 	expectation := &UserCacheRepositoryMockGetExpectation{
 		mock:               mmGet.mock,
-		params:             &UserCacheRepositoryMockGetParams{ctx, id},
+		params:             &UserCacheRepositoryMockGetParams{ctx, filter},
 		expectationOrigins: UserCacheRepositoryMockGetExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmGet.expectations = append(mmGet.expectations, expectation)
@@ -1004,17 +1005,17 @@ func (mmGet *mUserCacheRepositoryMockGet) invocationsDone() bool {
 }
 
 // Get implements mm_repository.UserCacheRepository
-func (mmGet *UserCacheRepositoryMock) Get(ctx context.Context, id int64) (up1 *model.User, err error) {
+func (mmGet *UserCacheRepositoryMock) Get(ctx context.Context, filter mm_repository.UserFilter) (up1 *model.User, err error) {
 	mm_atomic.AddUint64(&mmGet.beforeGetCounter, 1)
 	defer mm_atomic.AddUint64(&mmGet.afterGetCounter, 1)
 
 	mmGet.t.Helper()
 
 	if mmGet.inspectFuncGet != nil {
-		mmGet.inspectFuncGet(ctx, id)
+		mmGet.inspectFuncGet(ctx, filter)
 	}
 
-	mm_params := UserCacheRepositoryMockGetParams{ctx, id}
+	mm_params := UserCacheRepositoryMockGetParams{ctx, filter}
 
 	// Record call args
 	mmGet.GetMock.mutex.Lock()
@@ -1033,7 +1034,7 @@ func (mmGet *UserCacheRepositoryMock) Get(ctx context.Context, id int64) (up1 *m
 		mm_want := mmGet.GetMock.defaultExpectation.params
 		mm_want_ptrs := mmGet.GetMock.defaultExpectation.paramPtrs
 
-		mm_got := UserCacheRepositoryMockGetParams{ctx, id}
+		mm_got := UserCacheRepositoryMockGetParams{ctx, filter}
 
 		if mm_want_ptrs != nil {
 
@@ -1042,9 +1043,9 @@ func (mmGet *UserCacheRepositoryMock) Get(ctx context.Context, id int64) (up1 *m
 					mmGet.GetMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmGet.t.Errorf("UserCacheRepositoryMock.Get got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGet.GetMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			if mm_want_ptrs.filter != nil && !minimock.Equal(*mm_want_ptrs.filter, mm_got.filter) {
+				mmGet.t.Errorf("UserCacheRepositoryMock.Get got unexpected parameter filter, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGet.GetMock.defaultExpectation.expectationOrigins.originFilter, *mm_want_ptrs.filter, mm_got.filter, minimock.Diff(*mm_want_ptrs.filter, mm_got.filter))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -1059,9 +1060,9 @@ func (mmGet *UserCacheRepositoryMock) Get(ctx context.Context, id int64) (up1 *m
 		return (*mm_results).up1, (*mm_results).err
 	}
 	if mmGet.funcGet != nil {
-		return mmGet.funcGet(ctx, id)
+		return mmGet.funcGet(ctx, filter)
 	}
-	mmGet.t.Fatalf("Unexpected call to UserCacheRepositoryMock.Get. %v %v", ctx, id)
+	mmGet.t.Fatalf("Unexpected call to UserCacheRepositoryMock.Get. %v %v", ctx, filter)
 	return
 }
 

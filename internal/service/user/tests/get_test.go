@@ -20,8 +20,8 @@ func TestGet(t *testing.T) {
 	type userCacheRepositoryMockFunc func(mc *minimock.Controller) repository.UserCacheRepository
 
 	type args struct {
-		ctx context.Context
-		id  int64
+		ctx    context.Context
+		filter repository.UserFilter
 	}
 
 	var (
@@ -31,6 +31,7 @@ func TestGet(t *testing.T) {
 		id           = gofakeit.Int64()
 		name         = gofakeit.Name()
 		email        = gofakeit.Email()
+		filter       = repository.UserFilter{ID: &id}
 		passwordHash = "123456"
 		role         = model.RoleADMIN
 		createdAt    = gofakeit.Date()
@@ -63,8 +64,8 @@ func TestGet(t *testing.T) {
 		{
 			name: "get from database",
 			args: args{
-				ctx: ctx,
-				id:  id,
+				ctx:    ctx,
+				filter: filter,
 			},
 			want: &model.User{
 				ID: id,
@@ -80,12 +81,12 @@ func TestGet(t *testing.T) {
 			err: nil,
 			userRepositoryMock: func(mc *minimock.Controller) repository.UserRepository {
 				mock := repoMocks.NewUserRepositoryMock(mc)
-				mock.GetMock.Expect(ctx, id).Return(userEntity, nil)
+				mock.GetMock.Expect(ctx, filter).Return(userEntity, nil)
 				return mock
 			},
 			userCacheRepositoryMock: func(mc *minimock.Controller) repository.UserCacheRepository {
 				mock := repoMocks.NewUserCacheRepositoryMock(mc)
-				mock.GetMock.Expect(ctx, id).Return(nil, model.ErrorNoteNotFound)
+				mock.GetMock.Expect(ctx, filter).Return(nil, model.ErrorNoteNotFound)
 				mock.CreateMock.Expect(ctx, id, &info).Return(0, model.ErrorNoteNotFound)
 				return mock
 			},
@@ -93,8 +94,8 @@ func TestGet(t *testing.T) {
 		{
 			name: "get from cache",
 			args: args{
-				ctx: ctx,
-				id:  id,
+				ctx:    ctx,
+				filter: filter,
 			},
 			want: &model.User{
 				ID: id,
@@ -115,7 +116,7 @@ func TestGet(t *testing.T) {
 
 			userCacheRepositoryMock: func(mc *minimock.Controller) repository.UserCacheRepository {
 				mock := repoMocks.NewUserCacheRepositoryMock(mc)
-				mock.GetMock.Expect(ctx, id).Return(userEntity, nil)
+				mock.GetMock.Expect(ctx, filter).Return(userEntity, nil)
 				return mock
 			},
 		},
@@ -128,7 +129,7 @@ func TestGet(t *testing.T) {
 			userRepoMock := tt.userRepositoryMock(mc)
 			userCacheRepoMock := tt.userCacheRepositoryMock(mc)
 			api := userService.New(userRepoMock, userCacheRepoMock)
-			resonse, err := api.Get(tt.args.ctx, tt.args.id)
+			resonse, err := api.Get(tt.args.ctx, tt.args.filter)
 			require.Equal(t, tt.err, err)
 			require.Equal(t, tt.want, resonse)
 		})

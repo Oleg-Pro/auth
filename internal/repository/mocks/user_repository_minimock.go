@@ -11,6 +11,7 @@ import (
 	mm_time "time"
 
 	"github.com/Oleg-Pro/auth/internal/model"
+	mm_repository "github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/gojuno/minimock/v3"
 )
 
@@ -33,9 +34,9 @@ type UserRepositoryMock struct {
 	beforeDeleteCounter uint64
 	DeleteMock          mUserRepositoryMockDelete
 
-	funcGet          func(ctx context.Context, id int64) (up1 *model.User, err error)
+	funcGet          func(ctx context.Context, filter mm_repository.UserFilter) (up1 *model.User, err error)
 	funcGetOrigin    string
-	inspectFuncGet   func(ctx context.Context, id int64)
+	inspectFuncGet   func(ctx context.Context, filter mm_repository.UserFilter)
 	afterGetCounter  uint64
 	beforeGetCounter uint64
 	GetMock          mUserRepositoryMockGet
@@ -795,14 +796,14 @@ type UserRepositoryMockGetExpectation struct {
 
 // UserRepositoryMockGetParams contains parameters of the UserRepository.Get
 type UserRepositoryMockGetParams struct {
-	ctx context.Context
-	id  int64
+	ctx    context.Context
+	filter mm_repository.UserFilter
 }
 
 // UserRepositoryMockGetParamPtrs contains pointers to parameters of the UserRepository.Get
 type UserRepositoryMockGetParamPtrs struct {
-	ctx *context.Context
-	id  *int64
+	ctx    *context.Context
+	filter *mm_repository.UserFilter
 }
 
 // UserRepositoryMockGetResults contains results of the UserRepository.Get
@@ -813,9 +814,9 @@ type UserRepositoryMockGetResults struct {
 
 // UserRepositoryMockGetOrigins contains origins of expectations of the UserRepository.Get
 type UserRepositoryMockGetExpectationOrigins struct {
-	origin    string
-	originCtx string
-	originId  string
+	origin       string
+	originCtx    string
+	originFilter string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -829,7 +830,7 @@ func (mmGet *mUserRepositoryMockGet) Optional() *mUserRepositoryMockGet {
 }
 
 // Expect sets up expected params for UserRepository.Get
-func (mmGet *mUserRepositoryMockGet) Expect(ctx context.Context, id int64) *mUserRepositoryMockGet {
+func (mmGet *mUserRepositoryMockGet) Expect(ctx context.Context, filter mm_repository.UserFilter) *mUserRepositoryMockGet {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserRepositoryMock.Get mock is already set by Set")
 	}
@@ -842,7 +843,7 @@ func (mmGet *mUserRepositoryMockGet) Expect(ctx context.Context, id int64) *mUse
 		mmGet.mock.t.Fatalf("UserRepositoryMock.Get mock is already set by ExpectParams functions")
 	}
 
-	mmGet.defaultExpectation.params = &UserRepositoryMockGetParams{ctx, id}
+	mmGet.defaultExpectation.params = &UserRepositoryMockGetParams{ctx, filter}
 	mmGet.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmGet.expectations {
 		if minimock.Equal(e.params, mmGet.defaultExpectation.params) {
@@ -876,8 +877,8 @@ func (mmGet *mUserRepositoryMockGet) ExpectCtxParam1(ctx context.Context) *mUser
 	return mmGet
 }
 
-// ExpectIdParam2 sets up expected param id for UserRepository.Get
-func (mmGet *mUserRepositoryMockGet) ExpectIdParam2(id int64) *mUserRepositoryMockGet {
+// ExpectFilterParam2 sets up expected param filter for UserRepository.Get
+func (mmGet *mUserRepositoryMockGet) ExpectFilterParam2(filter mm_repository.UserFilter) *mUserRepositoryMockGet {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserRepositoryMock.Get mock is already set by Set")
 	}
@@ -893,14 +894,14 @@ func (mmGet *mUserRepositoryMockGet) ExpectIdParam2(id int64) *mUserRepositoryMo
 	if mmGet.defaultExpectation.paramPtrs == nil {
 		mmGet.defaultExpectation.paramPtrs = &UserRepositoryMockGetParamPtrs{}
 	}
-	mmGet.defaultExpectation.paramPtrs.id = &id
-	mmGet.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+	mmGet.defaultExpectation.paramPtrs.filter = &filter
+	mmGet.defaultExpectation.expectationOrigins.originFilter = minimock.CallerInfo(1)
 
 	return mmGet
 }
 
 // Inspect accepts an inspector function that has same arguments as the UserRepository.Get
-func (mmGet *mUserRepositoryMockGet) Inspect(f func(ctx context.Context, id int64)) *mUserRepositoryMockGet {
+func (mmGet *mUserRepositoryMockGet) Inspect(f func(ctx context.Context, filter mm_repository.UserFilter)) *mUserRepositoryMockGet {
 	if mmGet.mock.inspectFuncGet != nil {
 		mmGet.mock.t.Fatalf("Inspect function is already set for UserRepositoryMock.Get")
 	}
@@ -925,7 +926,7 @@ func (mmGet *mUserRepositoryMockGet) Return(up1 *model.User, err error) *UserRep
 }
 
 // Set uses given function f to mock the UserRepository.Get method
-func (mmGet *mUserRepositoryMockGet) Set(f func(ctx context.Context, id int64) (up1 *model.User, err error)) *UserRepositoryMock {
+func (mmGet *mUserRepositoryMockGet) Set(f func(ctx context.Context, filter mm_repository.UserFilter) (up1 *model.User, err error)) *UserRepositoryMock {
 	if mmGet.defaultExpectation != nil {
 		mmGet.mock.t.Fatalf("Default expectation is already set for the UserRepository.Get method")
 	}
@@ -941,14 +942,14 @@ func (mmGet *mUserRepositoryMockGet) Set(f func(ctx context.Context, id int64) (
 
 // When sets expectation for the UserRepository.Get which will trigger the result defined by the following
 // Then helper
-func (mmGet *mUserRepositoryMockGet) When(ctx context.Context, id int64) *UserRepositoryMockGetExpectation {
+func (mmGet *mUserRepositoryMockGet) When(ctx context.Context, filter mm_repository.UserFilter) *UserRepositoryMockGetExpectation {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserRepositoryMock.Get mock is already set by Set")
 	}
 
 	expectation := &UserRepositoryMockGetExpectation{
 		mock:               mmGet.mock,
-		params:             &UserRepositoryMockGetParams{ctx, id},
+		params:             &UserRepositoryMockGetParams{ctx, filter},
 		expectationOrigins: UserRepositoryMockGetExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmGet.expectations = append(mmGet.expectations, expectation)
@@ -983,17 +984,17 @@ func (mmGet *mUserRepositoryMockGet) invocationsDone() bool {
 }
 
 // Get implements mm_repository.UserRepository
-func (mmGet *UserRepositoryMock) Get(ctx context.Context, id int64) (up1 *model.User, err error) {
+func (mmGet *UserRepositoryMock) Get(ctx context.Context, filter mm_repository.UserFilter) (up1 *model.User, err error) {
 	mm_atomic.AddUint64(&mmGet.beforeGetCounter, 1)
 	defer mm_atomic.AddUint64(&mmGet.afterGetCounter, 1)
 
 	mmGet.t.Helper()
 
 	if mmGet.inspectFuncGet != nil {
-		mmGet.inspectFuncGet(ctx, id)
+		mmGet.inspectFuncGet(ctx, filter)
 	}
 
-	mm_params := UserRepositoryMockGetParams{ctx, id}
+	mm_params := UserRepositoryMockGetParams{ctx, filter}
 
 	// Record call args
 	mmGet.GetMock.mutex.Lock()
@@ -1012,7 +1013,7 @@ func (mmGet *UserRepositoryMock) Get(ctx context.Context, id int64) (up1 *model.
 		mm_want := mmGet.GetMock.defaultExpectation.params
 		mm_want_ptrs := mmGet.GetMock.defaultExpectation.paramPtrs
 
-		mm_got := UserRepositoryMockGetParams{ctx, id}
+		mm_got := UserRepositoryMockGetParams{ctx, filter}
 
 		if mm_want_ptrs != nil {
 
@@ -1021,9 +1022,9 @@ func (mmGet *UserRepositoryMock) Get(ctx context.Context, id int64) (up1 *model.
 					mmGet.GetMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmGet.t.Errorf("UserRepositoryMock.Get got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGet.GetMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			if mm_want_ptrs.filter != nil && !minimock.Equal(*mm_want_ptrs.filter, mm_got.filter) {
+				mmGet.t.Errorf("UserRepositoryMock.Get got unexpected parameter filter, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGet.GetMock.defaultExpectation.expectationOrigins.originFilter, *mm_want_ptrs.filter, mm_got.filter, minimock.Diff(*mm_want_ptrs.filter, mm_got.filter))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -1038,9 +1039,9 @@ func (mmGet *UserRepositoryMock) Get(ctx context.Context, id int64) (up1 *model.
 		return (*mm_results).up1, (*mm_results).err
 	}
 	if mmGet.funcGet != nil {
-		return mmGet.funcGet(ctx, id)
+		return mmGet.funcGet(ctx, filter)
 	}
-	mmGet.t.Fatalf("Unexpected call to UserRepositoryMock.Get. %v %v", ctx, id)
+	mmGet.t.Fatalf("Unexpected call to UserRepositoryMock.Get. %v %v", ctx, filter)
 	return
 }
 
