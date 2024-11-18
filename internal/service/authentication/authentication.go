@@ -18,7 +18,8 @@ type srv struct {
 }
 
 func (s *srv) Login(ctx context.Context, info model.LoginParams) (refereshToken string, err error) {
-	userInfo, err := s.userRepository.GetByEmail(ctx, info.Email)
+	email := info.Email
+	userInfo, err := s.userRepository.Get(ctx, repository.UserFilter{Email: &email})
 	if err != nil {
 		return "", model.ErrorFailToGenerateToken
 	}

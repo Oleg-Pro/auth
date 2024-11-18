@@ -63,9 +63,9 @@ func (r *repo) Update(ctx context.Context, id int64, info *model.UserUpdateInfo)
 
 	return id, nil
 }
-
-func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
-	idStr := userKey(id)
+			   
+func (r *repo) Get(ctx context.Context, filter repository.UserFilter) (*model.User, error) {
+	idStr := userKey(*filter.ID)
 	values, err := r.cl.HGetAll(ctx, idStr)
 	if err != nil {
 		return nil, err
