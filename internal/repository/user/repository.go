@@ -65,12 +65,19 @@ func (r *repo) Create(ctx context.Context, info *model.UserInfo) (int64, error) 
 	return userID, nil
 }
 
-func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
-	builderSelectOne := sq.Select(userColumnID, userColumnName, userColumnEmail, userColumnRoleID, userColumnCreatedAt, userColumnUpdateAt).
+func (r *repo) Get(ctx context.Context, filter repository.UserFilter) (*model.User, error) {
+	builderSelectOne := sq.Select(userColumnID, userColumnName, userColumnEmail, userColumnRoleID, userColumnPasswordHash, userColumnCreatedAt, userColumnUpdateAt).
 		From(userTable).
 		PlaceholderFormat(sq.Dollar).
-		Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): id}).
 		Limit(1)
+
+	if filter.ID != nil {
+		builderSelectOne = builderSelectOne.Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnID): filter.ID})
+	}
+
+	if filter.Email != nil {
+		builderSelectOne = builderSelectOne.Where(sq.Eq{fmt.Sprintf(`"%s"`, userColumnEmail): filter.Email})
+	}
 
 	query, args, err := builderSelectOne.ToSql()
 	if err != nil {
@@ -85,7 +92,7 @@ func (r *repo) Get(ctx context.Context, id int64) (*model.User, error) {
 		QueryRaw: query,
 	}
 
-	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.CreatedAt, &user.UpdatedAt)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&user.ID, &user.Info.Name, &user.Info.Email, &user.Info.Role, &user.Info.PaswordHash, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		log.Printf("Failed to get user: %v", err)
 		return nil, err

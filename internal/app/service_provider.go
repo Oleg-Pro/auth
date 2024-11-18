@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/IBM/sarama"
+	accessAPI "github.com/Oleg-Pro/auth/internal/api/access"
+	authAPI "github.com/Oleg-Pro/auth/internal/api/auth"
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
 	"github.com/Oleg-Pro/auth/internal/client/cache"
 	"github.com/Oleg-Pro/auth/internal/client/cache/redis"
@@ -15,9 +17,13 @@ import (
 	userRepository "github.com/Oleg-Pro/auth/internal/repository/user"
 	userCacheRepository "github.com/Oleg-Pro/auth/internal/repository/user/redis"
 	"github.com/Oleg-Pro/auth/internal/service"
+	"github.com/Oleg-Pro/auth/internal/service/access"
+	"github.com/Oleg-Pro/auth/internal/service/authentication"
 	userSaverConsumer "github.com/Oleg-Pro/auth/internal/service/consumer/user_saver"
+	"github.com/Oleg-Pro/auth/internal/service/password_verificator"
 	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"
 	userService "github.com/Oleg-Pro/auth/internal/service/user"
+	userToken "github.com/Oleg-Pro/auth/internal/service/user/token"
 	"github.com/Oleg-Pro/platform-common/pkg/closer"
 	"github.com/Oleg-Pro/platform-common/pkg/db"
 	"github.com/Oleg-Pro/platform-common/pkg/db/pg"
@@ -34,6 +40,7 @@ type serviceProvider struct {
 	httpConfig          config.HTTPConfig
 	swaggerConfig       config.SwaggerConfig
 	redisConfig         config.RedisConfig
+	authConfig          config.AuthConfig
 
 	dbClient    db.Client
 	txManager   db.TxManager
@@ -53,7 +60,16 @@ type serviceProvider struct {
 
 	userCacheRepository repository.UserCacheRepository
 	userService         service.UserService
+
 	userImplemenation   *userAPI.Implementation
+	authImplemenation   *authAPI.Implemenation
+	accessImplemenation *accessAPI.Implemenation
+
+	userTokenService      service.UserTokenService
+	passwordVerificator   service.PasswordVerificator
+	authenticationService service.AuthenticationService
+
+	accessService service.AccessService
 }
 
 func newServiceProvider() *serviceProvider {
@@ -186,6 +202,19 @@ func (s *serviceProvider) KafkaConsumerConfig() config.KafkaConsumerConfig {
 	return s.kafkaConsumerConfig
 }
 
+func (s *serviceProvider) AuthConfig() config.AuthConfig {
+	if s.authConfig == nil {
+		cfg, err := config.NewAuthConfig()
+		if err != nil {
+			log.Fatalf("failed to get auth config: %s", err.Error())
+		}
+
+		s.authConfig = cfg
+	}
+
+	return s.authConfig
+}
+
 func (s *serviceProvider) UserSaverConsumer(ctx context.Context) service.ConsumerService {
 	if s.userSaverConsumer == nil {
 		s.userSaverConsumer = userSaverConsumer.NewService(
@@ -287,6 +316,54 @@ func (s *serviceProvider) UserImplementation(ctx context.Context) *userAPI.Imple
 		s.userImplemenation = userAPI.NewImplementation(s.UserService(ctx), s.UserSaverProducer(kafkaProducerRetryMax))
 	}
 	return s.userImplemenation
+}
+
+func (s *serviceProvider) UserTokenService() service.UserTokenService {
+	if s.userTokenService == nil {
+		s.userTokenService = userToken.New()
+	}
+
+	return s.userTokenService
+}
+
+func (s *serviceProvider) PasswordVerificator() service.PasswordVerificator {
+	if s.passwordVerificator == nil {
+		s.passwordVerificator = password_verificator.New()
+	}
+
+	return s.passwordVerificator
+}
+
+func (s *serviceProvider) AuthenticationService(ctx context.Context) service.AuthenticationService {
+	if s.authenticationService == nil {
+		s.authenticationService = authentication.New(s.UserTokenService(), s.UserRepository(ctx), s.PasswordVerificator(), s.AuthConfig())
+	}
+
+	return s.authenticationService
+}
+
+func (s *serviceProvider) AccessService(_ context.Context) service.AccessService {
+	if s.accessService == nil {
+		s.accessService = access.New(s.UserTokenService(), s.AuthConfig())
+	}
+
+	return s.accessService
+}
+
+func (s *serviceProvider) AuthImplementation(ctx context.Context) *authAPI.Implemenation {
+
+	if s.authImplemenation == nil {
+		s.authImplemenation = authAPI.NewImplementation(s.AuthenticationService(ctx))
+	}
+	return s.authImplemenation
+}
+
+func (s *serviceProvider) AccessImplementation(ctx context.Context) *accessAPI.Implemenation {
+
+	if s.accessImplemenation == nil {
+		s.accessImplemenation = accessAPI.NewImplementation(s.AccessService(ctx))
+	}
+	return s.accessImplemenation
 }
 
 func newSyncProducer(brokerList []string, retryMax int) (sarama.SyncProducer, error) {

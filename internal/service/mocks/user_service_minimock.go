@@ -11,6 +11,7 @@ import (
 	mm_time "time"
 
 	"github.com/Oleg-Pro/auth/internal/model"
+	"github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/gojuno/minimock/v3"
 )
 
@@ -33,9 +34,9 @@ type UserServiceMock struct {
 	beforeDeleteCounter uint64
 	DeleteMock          mUserServiceMockDelete
 
-	funcGet          func(ctx context.Context, id int64) (up1 *model.User, err error)
+	funcGet          func(ctx context.Context, filter repository.UserFilter) (up1 *model.User, err error)
 	funcGetOrigin    string
-	inspectFuncGet   func(ctx context.Context, id int64)
+	inspectFuncGet   func(ctx context.Context, filter repository.UserFilter)
 	afterGetCounter  uint64
 	beforeGetCounter uint64
 	GetMock          mUserServiceMockGet
@@ -785,14 +786,14 @@ type UserServiceMockGetExpectation struct {
 
 // UserServiceMockGetParams contains parameters of the UserService.Get
 type UserServiceMockGetParams struct {
-	ctx context.Context
-	id  int64
+	ctx    context.Context
+	filter repository.UserFilter
 }
 
 // UserServiceMockGetParamPtrs contains pointers to parameters of the UserService.Get
 type UserServiceMockGetParamPtrs struct {
-	ctx *context.Context
-	id  *int64
+	ctx    *context.Context
+	filter *repository.UserFilter
 }
 
 // UserServiceMockGetResults contains results of the UserService.Get
@@ -803,9 +804,9 @@ type UserServiceMockGetResults struct {
 
 // UserServiceMockGetOrigins contains origins of expectations of the UserService.Get
 type UserServiceMockGetExpectationOrigins struct {
-	origin    string
-	originCtx string
-	originId  string
+	origin       string
+	originCtx    string
+	originFilter string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -819,7 +820,7 @@ func (mmGet *mUserServiceMockGet) Optional() *mUserServiceMockGet {
 }
 
 // Expect sets up expected params for UserService.Get
-func (mmGet *mUserServiceMockGet) Expect(ctx context.Context, id int64) *mUserServiceMockGet {
+func (mmGet *mUserServiceMockGet) Expect(ctx context.Context, filter repository.UserFilter) *mUserServiceMockGet {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserServiceMock.Get mock is already set by Set")
 	}
@@ -832,7 +833,7 @@ func (mmGet *mUserServiceMockGet) Expect(ctx context.Context, id int64) *mUserSe
 		mmGet.mock.t.Fatalf("UserServiceMock.Get mock is already set by ExpectParams functions")
 	}
 
-	mmGet.defaultExpectation.params = &UserServiceMockGetParams{ctx, id}
+	mmGet.defaultExpectation.params = &UserServiceMockGetParams{ctx, filter}
 	mmGet.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmGet.expectations {
 		if minimock.Equal(e.params, mmGet.defaultExpectation.params) {
@@ -866,8 +867,8 @@ func (mmGet *mUserServiceMockGet) ExpectCtxParam1(ctx context.Context) *mUserSer
 	return mmGet
 }
 
-// ExpectIdParam2 sets up expected param id for UserService.Get
-func (mmGet *mUserServiceMockGet) ExpectIdParam2(id int64) *mUserServiceMockGet {
+// ExpectFilterParam2 sets up expected param filter for UserService.Get
+func (mmGet *mUserServiceMockGet) ExpectFilterParam2(filter repository.UserFilter) *mUserServiceMockGet {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserServiceMock.Get mock is already set by Set")
 	}
@@ -883,14 +884,14 @@ func (mmGet *mUserServiceMockGet) ExpectIdParam2(id int64) *mUserServiceMockGet 
 	if mmGet.defaultExpectation.paramPtrs == nil {
 		mmGet.defaultExpectation.paramPtrs = &UserServiceMockGetParamPtrs{}
 	}
-	mmGet.defaultExpectation.paramPtrs.id = &id
-	mmGet.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+	mmGet.defaultExpectation.paramPtrs.filter = &filter
+	mmGet.defaultExpectation.expectationOrigins.originFilter = minimock.CallerInfo(1)
 
 	return mmGet
 }
 
 // Inspect accepts an inspector function that has same arguments as the UserService.Get
-func (mmGet *mUserServiceMockGet) Inspect(f func(ctx context.Context, id int64)) *mUserServiceMockGet {
+func (mmGet *mUserServiceMockGet) Inspect(f func(ctx context.Context, filter repository.UserFilter)) *mUserServiceMockGet {
 	if mmGet.mock.inspectFuncGet != nil {
 		mmGet.mock.t.Fatalf("Inspect function is already set for UserServiceMock.Get")
 	}
@@ -915,7 +916,7 @@ func (mmGet *mUserServiceMockGet) Return(up1 *model.User, err error) *UserServic
 }
 
 // Set uses given function f to mock the UserService.Get method
-func (mmGet *mUserServiceMockGet) Set(f func(ctx context.Context, id int64) (up1 *model.User, err error)) *UserServiceMock {
+func (mmGet *mUserServiceMockGet) Set(f func(ctx context.Context, filter repository.UserFilter) (up1 *model.User, err error)) *UserServiceMock {
 	if mmGet.defaultExpectation != nil {
 		mmGet.mock.t.Fatalf("Default expectation is already set for the UserService.Get method")
 	}
@@ -931,14 +932,14 @@ func (mmGet *mUserServiceMockGet) Set(f func(ctx context.Context, id int64) (up1
 
 // When sets expectation for the UserService.Get which will trigger the result defined by the following
 // Then helper
-func (mmGet *mUserServiceMockGet) When(ctx context.Context, id int64) *UserServiceMockGetExpectation {
+func (mmGet *mUserServiceMockGet) When(ctx context.Context, filter repository.UserFilter) *UserServiceMockGetExpectation {
 	if mmGet.mock.funcGet != nil {
 		mmGet.mock.t.Fatalf("UserServiceMock.Get mock is already set by Set")
 	}
 
 	expectation := &UserServiceMockGetExpectation{
 		mock:               mmGet.mock,
-		params:             &UserServiceMockGetParams{ctx, id},
+		params:             &UserServiceMockGetParams{ctx, filter},
 		expectationOrigins: UserServiceMockGetExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmGet.expectations = append(mmGet.expectations, expectation)
@@ -973,17 +974,17 @@ func (mmGet *mUserServiceMockGet) invocationsDone() bool {
 }
 
 // Get implements mm_service.UserService
-func (mmGet *UserServiceMock) Get(ctx context.Context, id int64) (up1 *model.User, err error) {
+func (mmGet *UserServiceMock) Get(ctx context.Context, filter repository.UserFilter) (up1 *model.User, err error) {
 	mm_atomic.AddUint64(&mmGet.beforeGetCounter, 1)
 	defer mm_atomic.AddUint64(&mmGet.afterGetCounter, 1)
 
 	mmGet.t.Helper()
 
 	if mmGet.inspectFuncGet != nil {
-		mmGet.inspectFuncGet(ctx, id)
+		mmGet.inspectFuncGet(ctx, filter)
 	}
 
-	mm_params := UserServiceMockGetParams{ctx, id}
+	mm_params := UserServiceMockGetParams{ctx, filter}
 
 	// Record call args
 	mmGet.GetMock.mutex.Lock()
@@ -1002,7 +1003,7 @@ func (mmGet *UserServiceMock) Get(ctx context.Context, id int64) (up1 *model.Use
 		mm_want := mmGet.GetMock.defaultExpectation.params
 		mm_want_ptrs := mmGet.GetMock.defaultExpectation.paramPtrs
 
-		mm_got := UserServiceMockGetParams{ctx, id}
+		mm_got := UserServiceMockGetParams{ctx, filter}
 
 		if mm_want_ptrs != nil {
 
@@ -1011,9 +1012,9 @@ func (mmGet *UserServiceMock) Get(ctx context.Context, id int64) (up1 *model.Use
 					mmGet.GetMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
 			}
 
-			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
-				mmGet.t.Errorf("UserServiceMock.Get got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
-					mmGet.GetMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			if mm_want_ptrs.filter != nil && !minimock.Equal(*mm_want_ptrs.filter, mm_got.filter) {
+				mmGet.t.Errorf("UserServiceMock.Get got unexpected parameter filter, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGet.GetMock.defaultExpectation.expectationOrigins.originFilter, *mm_want_ptrs.filter, mm_got.filter, minimock.Diff(*mm_want_ptrs.filter, mm_got.filter))
 			}
 
 		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
@@ -1028,9 +1029,9 @@ func (mmGet *UserServiceMock) Get(ctx context.Context, id int64) (up1 *model.Use
 		return (*mm_results).up1, (*mm_results).err
 	}
 	if mmGet.funcGet != nil {
-		return mmGet.funcGet(ctx, id)
+		return mmGet.funcGet(ctx, filter)
 	}
-	mmGet.t.Fatalf("Unexpected call to UserServiceMock.Get. %v %v", ctx, id)
+	mmGet.t.Fatalf("Unexpected call to UserServiceMock.Get. %v %v", ctx, filter)
 	return
 }
 

@@ -5,15 +5,16 @@ import (
 	"log"
 
 	"github.com/Oleg-Pro/auth/internal/model"
+	"github.com/Oleg-Pro/auth/internal/repository"
 )
 
-func (s *serv) Get(ctx context.Context, id int64) (*model.User, error) {
-	user, err := s.userCacheRepository.Get(ctx, id)
+func (s *serv) Get(ctx context.Context, filter repository.UserFilter) (*model.User, error) {
+	user, err := s.userCacheRepository.Get(ctx, filter)
 	if err == nil {
 		return user, err
 	}
 
-	user, err = s.userRepository.Get(ctx, id)
+	user, err = s.userRepository.Get(ctx, filter)
 
 	if err == nil {
 		_, errRedis := s.userCacheRepository.Create(ctx, user.ID, &user.Info)

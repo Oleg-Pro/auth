@@ -7,6 +7,7 @@ import (
 
 	userAPI "github.com/Oleg-Pro/auth/internal/api/user"
 	"github.com/Oleg-Pro/auth/internal/model"
+	"github.com/Oleg-Pro/auth/internal/repository"
 	"github.com/Oleg-Pro/auth/internal/service"
 	serviceMocks "github.com/Oleg-Pro/auth/internal/service/mocks"
 	userSaverProducer "github.com/Oleg-Pro/auth/internal/service/producer/user_saver"
@@ -33,6 +34,7 @@ func TestGet(t *testing.T) {
 		mc  = minimock.NewController(t)
 
 		id           = gofakeit.Int64()
+		filter       = repository.UserFilter{ID: &id}
 		name         = gofakeit.Name()
 		email        = gofakeit.Email()
 		role         = desc.Role_ADMIN
@@ -75,7 +77,7 @@ func TestGet(t *testing.T) {
 			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 
-				mock.GetMock.Expect(ctx, id).Return(&model.User{
+				mock.GetMock.Expect(ctx, filter).Return(&model.User{
 					ID: id,
 					Info: model.UserInfo{
 						Name:        name,

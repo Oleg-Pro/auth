@@ -41,3 +41,15 @@ type User struct {
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
 }
+
+// UserTokenParams parameters for user token
+type UserTokenParams struct {
+	Username string `json:"username"`
+	Role     string `json:"role"`
+}
+
+// LoginParams login params
+type LoginParams struct {
+	Email    string
+	Password string
+}
