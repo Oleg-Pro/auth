@@ -21,10 +21,6 @@ func (s *srv) Allow(ctx context.Context, endpointAddress string, accessToken str
 
 	authConfig := s.authConfig
 	log.Printf("authConfig %#v\n", authConfig)
-	accessTokenKeySecret := s.authConfig.AccessTokenSecretKey()
-	log.Printf("accessTokenKeySecret %s\n", accessTokenKeySecret)
-
-	log.Printf("Allow Access Token: %s\n", accessToken)
 
 	claims, err := s.userTokenService.VerifyToken(accessToken, []byte(s.authConfig.AccessTokenSecretKey()))
 	if err != nil {
@@ -34,10 +30,9 @@ func (s *srv) Allow(ctx context.Context, endpointAddress string, accessToken str
 
 	// Admin has access eveywhere
 	if claims.Role == string(model.RoleADMIN) {
-		log.Println("ADMIN role - verified!")		
+		log.Println("ADMIN role - verified!")
 		return true
 	}
-
 
 	accessibleMap, err := s.accessibleRolesMap(ctx)
 	if err != nil {
@@ -62,7 +57,7 @@ func (s *srv) accessibleRolesMap(_ context.Context) (map[string][]string, error)
 	if accessibleRoles == nil {
 		accessibleRoles = make(map[string][]string)
 
-		accessibleRoles["chat_v1.ChatV1/SendMessage"] = []string {string(model.RoleUSER), }
+		accessibleRoles["chat_v1.ChatV1/SendMessage"] = []string{string(model.RoleUSER)}
 	}
 
 	return accessibleRoles, nil
