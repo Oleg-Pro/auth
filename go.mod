@@ -13,8 +13,11 @@ require (
 	github.com/gojuno/minimock/v3 v3.4.1
 	github.com/golang/protobuf v1.5.4
 	github.com/gomodule/redigo v1.9.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0
+	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/joho/godotenv v1.5.1
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
 	github.com/rs/cors v1.11.1
