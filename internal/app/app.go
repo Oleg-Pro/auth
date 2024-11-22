@@ -18,6 +18,9 @@ import (
 	accessDesc "github.com/Oleg-Pro/auth/pkg/access_v1"
 	authDesc "github.com/Oleg-Pro/auth/pkg/auth_v1"
 	desc "github.com/Oleg-Pro/auth/pkg/user_v1"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/opentracing/opentracing-go"
 
 	// To make statik virtual system work
 	_ "github.com/Oleg-Pro/auth/statik"
@@ -133,7 +136,11 @@ func (a *App) initServiceProvider(_ context.Context) error {
 func (a *App) initGRPCServer(ctx context.Context) error {
 	a.grpcServer = grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+		grpc.UnaryInterceptor(
+			grpcMiddleware.ChainUnaryServer(
+				interceptor.ValidateInterceptor,
+				otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
+			)),
 	)
 	reflection.Register(a.grpcServer)
 	desc.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserImplementation(ctx))

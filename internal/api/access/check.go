@@ -2,6 +2,7 @@ package access
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/Oleg-Pro/auth/internal/model"
@@ -16,6 +17,7 @@ const (
 
 // Check check access to endpoint
 func (i *Implemenation) Check(ctx context.Context, req *desc.CheckRequest) (*emptypb.Empty, error) {
+	log.Printf("Access Context %v#", ctx)
 	accessToken, err := getAccessToken(ctx)
 	if err != nil {
 		return nil, err
